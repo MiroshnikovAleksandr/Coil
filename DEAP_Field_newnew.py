@@ -5,6 +5,7 @@ from deap import tools
 import random
 import sys
 import matplotlib.pyplot as plt
+import pandas as pd
 import numpy as np
 
 import Field_functions as ff
@@ -51,8 +52,6 @@ toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 pop = toolbox.population(n=population_size)
 
 
-
-
 def bounds_fn(ind):
     bounds = [(a_min, a_max)]
     len_chromosome = len(ind)
@@ -62,8 +61,15 @@ def bounds_fn(ind):
     for i in range(0, len_chromosome, len_chromosome_one_var):
         array_of_chromosomes_one.append(''.join(str(xi) for xi in ind[i:i + len_chromosome_one_var]))
 
-    array_of_chromosomes_one_decimal_sorted = list(
-        reversed(sorted(list(map(lambda x: int(x, 2), array_of_chromosomes_one)))))
+    array_of_chromosomes_one_decimal_sorted = list(map(lambda x: int(x, 2), array_of_chromosomes_one))
+
+    zipped = zip(array_of_chromosomes_one, array_of_chromosomes_one_decimal_sorted)
+    zipped_sorted = sorted(zipped, key=lambda tup: tup[1], reverse=True)
+
+    array_of_chromosomes_one = [x[0] for x in zipped_sorted]
+    array_of_chromosomes_one_decimal_sorted = [x[1] for x in zipped_sorted]
+
+    sorted_individual = list(''.join(s for s in array_of_chromosomes_one))
 
     precision = (a_max - a_min) / ((2 ** len_chromosome_one_var) - 1)
 
@@ -72,17 +78,19 @@ def bounds_fn(ind):
     for i in range(1, no_of_variables):
         bounds.append((a_min, radiuses[i - 1] - i*minimal_gap))
 
-    return bounds
+    return [sorted_individual, bounds]
+
 
 def decode_all_x(individual, no_of_variables):
     len_chromosome = len(individual)
     len_chromosome_one_var = int(len_chromosome / no_of_variables)
     bound_index = 0
     x = []
-    bounds = bounds_fn(individual)
+    individual = bounds_fn(individual)[0]
+    bounds = bounds_fn(individual)[1]
 
     for i in range(0, len_chromosome, len_chromosome_one_var):
-        # converts binary to decimial using 2**place_value
+        # converts binary to decimal using 2**place_value
         chromosome_string = ''.join((str(xi) for xi in individual[i:i + len_chromosome_one_var]))
         binary_to_decimal = int(chromosome_string, 2)
 
@@ -148,5 +156,8 @@ hall_of_fame = tools.HallOfFame(1)
 hall_of_fame.update(pop)
 print(decode_all_x(hall_of_fame[0], no_of_variables))
 print(objective_fxn(hall_of_fame[0])[0])
-print(hall_of_fame[0])
-plt.show()
+print(bounds_fn(hall_of_fame[0]))
+# plt.show()
+
+df = pd.DataFrame(decode_all_x(hall_of_fame[0], no_of_variables))
+df.to_excel('hall_of_fame.xlsx')
