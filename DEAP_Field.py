@@ -68,7 +68,7 @@ def decode_all_x(individual, no_of_variables, bounds):
     
     for i in range(0,len_chromosome,len_chromosome_one_var):
         # converts binary to decimial using 2**place_value
-        chromosome_string = ''.join((str(xi) for xi in  individual[i:i+len_chromosome_one_var]))
+        chromosome_string = ''.join((str(xi) for xi in individual[i:i+len_chromosome_one_var]))
         binary_to_decimal = int(chromosome_string,2)
         
         lb = bounds[bound_index][0]
@@ -100,7 +100,7 @@ def check_feasiblity(individual):
     Returns True if individual is feasible (or constraint not violated),
     False otherwise
     '''
-    var_list = decode_all_x(individual,no_of_variables,bounds)
+    var_list = decode_all_x(individual, no_of_variables, bounds)
     if sum(var_list) < 0:
         return True
     else:
@@ -154,11 +154,11 @@ hall_of_fame.clear()
 while g < no_of_generations:
     # A new generation
     g = g + 1
-    
-    
+
+
     offspring = toolbox.select(pop, len(pop))
     offspring = list(map(toolbox.clone, offspring))
-    
+
     for child1, child2 in zip(offspring[::2], offspring[1::2]):
         if random.random() < CXPB:
                 toolbox.mate(child1, child2)
@@ -168,31 +168,31 @@ while g < no_of_generations:
         for mutant in offspring:
             if random.random() < MUTPB:
                 toolbox.mutate(mutant)
-                del mutant.fitness.values 
-                
-                
+                del mutant.fitness.values
+
+
     invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
     fitnesses = map(toolbox.evaluate, invalid_ind)
     for ind, fit in zip(invalid_ind, fitnesses):
         ind.fitness.values = fit
-        
-    
+
+
     this_gen_fitness = [] # this list will have fitness value of all the offspring
     for ind in offspring:
-        this_gen_fitness.append(ind.fitness.values[0])            
-    
-    
+        this_gen_fitness.append(ind.fitness.values[0])
+
+
     hall_of_fame.update(offspring)
-    
+
     stats_of_this_gen = stats.compile(this_gen_fitness)
-    
+
     stats_of_this_gen['Generation'] = g
-    
+
     print(stats_of_this_gen)
-    
+
     logbook.append(stats_of_this_gen)
-    
-    
+
+
     pop[:] = offspring
     
     
@@ -203,7 +203,7 @@ for best_indi in hall_of_fame:
     print('Minimum value for function: ',best_obj_val_overall)
     print('Optimum Solution: ',decode_all_x(best_indi,no_of_variables,bounds))
 
-    
+
 best_obj_val_convergence = logbook.select('Min')[-1]
 
 
