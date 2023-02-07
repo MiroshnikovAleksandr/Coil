@@ -44,4 +44,5 @@ def bounds(ind):
     return bounds
 
 
-print(bounds(ind))
+def decode(ind):
+
