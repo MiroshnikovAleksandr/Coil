@@ -4,6 +4,7 @@ from deap import tools
 
 import random
 import sys
+import math
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -188,10 +189,13 @@ def main():
     hall_of_fame.update(pop)
     print(decode_all_x(hall_of_fame[0]))
     print(objective_fxn(hall_of_fame[0])[0])
+
+    length = 2*math.pi*np.sum(np.array(decode_all_x(hall_of_fame[0])))
+    print(f'Total length = {length} m.')
     #print(bounds_fn(hall_of_fame[0]))
     # plt.show()
 
-    df = pd.DataFrame(hall_of_fame[0][0])
+    df = pd.DataFrame(decode_all_x(hall_of_fame[0]))
     df.to_excel('hall_of_fame.xlsx')
 
     return objective_fxn(hall_of_fame[0])
