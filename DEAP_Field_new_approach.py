@@ -19,8 +19,9 @@ import Field_functions as ff
 
 def main():
     # Genetic
-    no_of_generations = 50  # максимальное количество поколений
-    population_size = 50  # количество индивидуумов в популяции
+    len_of_turn = 5
+    no_of_generations = 100  # максимальное количество поколений
+    population_size = 250  # количество индивидуумов в популяции
     # size_of_individual = 1000 - (1000 % no_of_variables) # длина подлежащей оптимизации битовой строки
     probability_of_mutation = 0.1  # вероятность мутации индивидуума
     tournSel_k = 4
@@ -63,11 +64,11 @@ def main():
     pop = toolbox.population(n=population_size)
 
     def bounds_fn(ind):
-        ind = [0]*(10 - (len(ind) % 10)) + ind
+        ind = [0] * (len_of_turn - (len(ind) % len_of_turn)) + ind
 
         bounds = [(a_min, a_max)]
         len_chromosome = len(ind)
-        len_chromosome_one_var = 10
+        len_chromosome_one_var = len_of_turn
         no_of_variables = len_chromosome // len_chromosome_one_var
         array_of_chromosomes_one = []
 
@@ -94,7 +95,7 @@ def main():
         return [sorted_individual, bounds]
 
     def decode_all_x(individual):
-        len_chromosome_one_var = 10
+        len_chromosome_one_var = len_of_turn
         bound_index = 0
         x = []
 
@@ -135,27 +136,35 @@ def main():
     #
     #     return tuple(new_ind1, new_ind2)
 
+    def length(ind):
+        l = 2 * math.pi * np.sum(np.array(decode_all_x(ind)))
+        return l
+
+    def check_feasibility(ind):
+        if length(ind) > 20: return False
+        else: return True
+
     def mutate(ind, Indpb):
         p = random.random()
         if p <= 0.5:
-            ind += [(i - (i - 1)) * random.randint(0, 1) for i in range(10)]
+            ind += [(i - (i - 1)) * random.randint(0, 1) for i in range(len_of_turn)]
         else:
-            ind = ind[:-10]
+            del ind[len(ind) - len_of_turn::]
         ind = tools.mutFlipBit(ind, indpb=Indpb)
-        return ind,
+        return ind
 
     # registering objetive function with constraint
     toolbox.register("evaluate", objective_fxn)  # privide the objective function here
-    # toolbox.decorate("evaluate", tools.DeltaPenalty(check_feasiblity, 1000, penalty_fxn)) # constraint on our
+    toolbox.decorate("evaluate", tools.DeltaPenalty(check_feasibility, 1.5))#, penalty_fxn))  # constraint on our
     # objective function
 
     # registering basic processes using built in functions in DEAP
     toolbox.register("select", tools.selTournament, tournsize=tournSel_k)  # selection strategy
     toolbox.register("mate",
                      tools.cxMessyOnePoint)  # strategy for crossover, this classic two point crossover
-    #toolbox.register("mutate", mutate,
-    #                Indpb=probability_of_mutation)  # mutation strategy with probability of mutation
-    toolbox.register("mutate", tools.mutFlipBit, indpb=probability_of_mutation)
+    toolbox.register("mutate", mutate,
+                     Indpb=probability_of_mutation)  # mutation strategy with probability of mutation
+    # toolbox.register("mutate", tools.mutFlipBit, indpb=probability_of_mutation)
 
     stats = tools.Statistics(lambda ind: ind.fitness.values)
     stats.register('Min', np.min)
@@ -190,9 +199,8 @@ def main():
     print(decode_all_x(hall_of_fame[0]))
     print(objective_fxn(hall_of_fame[0])[0])
 
-    length = 2*math.pi*np.sum(np.array(decode_all_x(hall_of_fame[0])))
-    print(f'Total length = {length} m.')
-    #print(bounds_fn(hall_of_fame[0]))
+    print(f'Total length = {length(hall_of_fame[0])} m.')
+    # print(bounds_fn(hall_of_fame[0]))
     # plt.show()
 
     df = pd.DataFrame(decode_all_x(hall_of_fame[0]))
