@@ -13,7 +13,8 @@ turns = [0.49986530221352876, 0.4957422334496335, 0.4913159397152264, 0.48650341
          0.4194663585872939, 0.35410272529314335, 0.28729411095991536, 0.15641894155542901, 0.07312009035069601]
 turns = [0.5, 0.498, 0.496, 0.494, 0.4349677419354839, 0.3703329864724246, 0.2621789802289282, 0.05]
 turns = [0.5, 0.498, 0.496, 0.4653548387096774, 0.409681581685744, 0.33337148803329864, 0.19536108220603537]
-
+freq = 6.78 # MHz
+c = 299_792_458 # m/s
 
 def main(turns):
     # GLOBAL CONSTANTS
@@ -80,12 +81,14 @@ def main(turns):
     print(1 - (sum(first_turns) / sum(second_turns)))
 
 
-def normal_solution(turns):
+def normal_solution(turns, freq):
 
-    # This code works best if the :turns: array is sorted, which it is
-
-    # n = func(freq)
-    n = 2
+    # This code works best if the :turns: array is sorted, which it is.
+    freq = freq*1_000_000
+    length_of_wave = c/freq
+    max_length = length_of_wave / 6
+    n = math.ceil((sum(turns)*2*math.pi) / max_length)
+    print(n)
 
     res = []
     for i in range(n):
@@ -100,4 +103,4 @@ def normal_solution(turns):
     print(sum(turns) * 2 * math.pi)
 
 
-normal_solution(turns)
+normal_solution(turns, freq)
