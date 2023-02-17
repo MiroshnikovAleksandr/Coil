@@ -20,7 +20,7 @@ import Field_functions as ff
 def main():
     # Genetic
     len_of_turn = 5
-    no_of_generations = 100  # максимальное количество поколений
+    no_of_generations = 80  # максимальное количество поколений
     population_size = 250  # количество индивидуумов в популяции
     # size_of_individual = 1000 - (1000 % no_of_variables) # длина подлежащей оптимизации битовой строки
     probability_of_mutation = 0.1  # вероятность мутации индивидуума
