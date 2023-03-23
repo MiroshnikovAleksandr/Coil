@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 #plt.style.use(['science','ieee'])
 
-# Geometrical parameters
+# Geometrical parameters.toml
 a_max = 1  # [m] Max coil radius
 a_min = 0.1 # [m] Min coil radius
 n = 10 # Number of turns

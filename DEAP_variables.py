@@ -19,7 +19,7 @@ probability_of_mutation = 0.1  # вероятность мутации инди�
 tournSel_k = 4
 CXPB, MUTPB = 0.4, 0.04  # вероятность мутации и срещивания
 
-# Geometrical & Electrical parameters
+# Geometrical & Electrical parameters.toml
 a_max = 0.5  # [m] Max coil radius
 a_min = 0.05  # [m] Min coil radius
 I = 1  # [A] Current
