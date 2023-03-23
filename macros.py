@@ -11,7 +11,7 @@ coils = [[0.475, 0.45],
 def create_macros(coils):
     rad = 'Array(' + ', '.join(f'Array({", ".join(str(r) for r in coil)})' for coil in coils) + ')'
 
-    with open('macros.cst', 'w') as f:
+    with open('macros.mcs', 'w') as f:
         f.write(f"""Option Explicit
 
 Sub main
