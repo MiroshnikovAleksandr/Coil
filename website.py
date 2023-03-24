@@ -19,7 +19,7 @@ if geometry == 'Circular':
     parameters['geom']['a_min'] = st.number_input('Minimal radius of your coil, m', value=0.05)
 
 GA = alg.Genetic(parameters)
-GA.alg.preparation()
-GA.alg.execution()
-GA.alg.show()
+GA.preparation()
+st.write(GA.execution())
+GA.show()
 
