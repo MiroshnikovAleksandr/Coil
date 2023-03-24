@@ -1,25 +1,31 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import tomli
-import DEAP_Field_refactored as alg
 
-st.title('Project')
+# Настройка боковой панели
+with st.sidebar:
+    st.title("Ввод параметров")
+    st.radio("Форма катушки", ['круглая', 'прямоугольная'])
+    st.header("Геометрически параметры")
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        diameter = st.number_input('Диаметр')
+        length = st.number_input('Длина')
+        width = st.number_input('Ширина')
+    with col2:
+        diameter_ = st.selectbox('', ('мм', 'см', 'м'))
+        length_ = st.selectbox('  ', ('мм', 'см', 'м'))
+        width_ = st.selectbox(' ', ('мм', 'см', 'м'))
+    st.header("Электрические параметры")
+    col1, col2 = st.columns([3, 1])
+    with col1:
+        frequency = st.number_input('Частота')
+        voltage = st.number_input('Напряжение')
+    with col2:
+        frequency_ = st.selectbox('', ('мГц', 'Гц', 'кГц'))
+        voltage = st.selectbox('', ('Вт'))
 
-with open('parameters.toml', 'rb') as toml:
-    parameters = tomli.load(toml)
+    optimisation = st.checkbox('Оптимизация витков')
+    do = st.button('Посчитать')
 
-minimal_gap = st.number_input('Diameter of your wire, m', value=0.001)
-parameters['geom']['minimal_gap'] = minimal_gap
-
-geometry = st.selectbox('Select the geometry of your coil', ('Circular', 'Square', 'Piecewise linear'))
-
-if geometry == 'Circular':
-    parameters['geom']['a_max'] = st.number_input('Maximum radius of your coil, m', value=0.5)
-    parameters['geom']['a_min'] = st.number_input('Minimal radius of your coil, m', value=0.05)
-
-GA = alg.Genetic(parameters)
-GA.preparation()
-st.write(GA.execution())
-GA.show()
 
