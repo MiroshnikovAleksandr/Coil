@@ -1,6 +1,6 @@
 [gen]
 length_of_turn = 5
-no_of_generations = 10  # максимальное количество поколений
+no_of_generations = 1  # максимальное количество поколений
 population_size = 50  # количество индивидуумов в популяции
 probability_of_mutation = 0.1  # вероятность мутации индивидуума
 tournSel_k = 4
