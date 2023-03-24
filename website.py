@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 
-# Настройка боковой панели
+# Настройка боковой панели (Переменные пока от балды назвала)
 with st.sidebar:
     st.title("Ввод параметров")
     st.radio("Форма катушки", ['круглая', 'прямоугольная'])
