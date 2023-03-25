@@ -19,7 +19,9 @@ creator.create("Individual", list, fitness=creator.FitnessMin)
 
 
 class Genetic:
-
+    """
+    This class describes the genetic algorithm.
+    """
     def __init__(self, params):
         self.hall_of_fame = None
         self.logbook = None
