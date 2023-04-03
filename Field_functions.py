@@ -68,6 +68,154 @@ def COV_circ(Bz,max_coil_r,height,spacing):
     COV = B_std/B_mean
     return COV
 
+def contour_resistance(material, l, d, nu):
+    """
+        Calculates the contour resistance
+
+        Parameters
+        ----------
+        material :
+            contour material
+        l :
+            contour length
+        d :
+            wire diameter
+        nu:
+            current frequency
+    """
+    Epsilon0 = 8.85419e-12
+    omega = 2*np.pi*nu
+    c = 299792458
+
+    ro = {
+        'Silver': 0.016,
+        'Copper': 0.017,
+        'Gold': 0.024,
+        'Aluminum': 0.028,
+        'Tungsten': 0.055
+    }
+
+    delta = c * np.sqrt((2*Epsilon0*ro[material]) / omega)
+
+    S_eff = np.pi*(d / 2 -delta)**2
+
+    R = ro[material] * (l / S_eff)
+
+    return R[0]
+
+
+def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
+    """
+               Calculates Bz field of single-segment
+
+               Parameters
+               ----------
+               x, y :
+                   Coordinates of the beginning and end of the segment
+               g :
+                   Calculation domain length
+               I :
+                   Current [A]
+               spacing :
+                   Spacing between segment and the calculation domain boundary
+               cp :
+                   Calculation domain points
+
+    """
+    mu0 = np.pi * 4e-7
+    C = mu0 * I / (4 * np.pi)
+
+    calc_radius = g * spacing
+    x = np.linspace(-calc_radius, calc_radius, cp)
+    xv, yv, zv = np.meshgrid(x, x, x)
+
+    if x1 != x2 and y1 != y2:
+        k = (y2 - y1) / (x2 - x1)
+        b = (y1 * x2 - y2 * x1) / (x2 - x1)
+        alpha = yv - (xv * k + b)
+        betta = k ** 2 + 1
+        gamma = k * (yv - b) + xv
+
+        Bz_segment1 = (alpha * (betta * x1 - gamma)) / ((betta ** 2 * zv ** 2 + alpha ** 2) * np.sqrt(
+            betta * x1 ** 2 - 2 * gamma * x1 + zv ** 2 + (yv - b) ** 2 + xv ** 2))
+        Bz_segment2 = (alpha * (betta * x2 - gamma)) / ((betta ** 2 * zv ** 2 + alpha ** 2) * np.sqrt(
+            betta * x2 ** 2 - 2 * gamma * x2 + zv ** 2 + (yv - b) ** 2 + xv ** 2))
+
+        Bz_segment = C * (Bz_segment2 - Bz_segment1)
+    elif x1 == x2 and y1 != y2:
+        x = x1
+        alpha = zv**2 + (xv - x)**2
+
+        Bz_segment1 = ((x - xv) * (y1 - yv)) / (alpha * np.sqrt((y1 - yv)**2 + alpha))
+        Bz_segment2 = ((x - xv) * (y2 - yv)) / (alpha * np.sqrt((y2 - yv) ** 2 + alpha))
+
+        Bz_segment = C * (Bz_segment2 - Bz_segment1)
+
+    elif x1 != x2 and y1 == y2:
+        y = y1
+        alpha = zv ** 2 + (yv - y) ** 2
+
+        Bz_segment1 = ((yv - y) * (x1 - xv)) / (alpha * np.sqrt((x1 - xv) ** 2 + alpha))
+        Bz_segment2 = ((yv - y) * (x2 - xv)) / (alpha * np.sqrt((x2 - xv) ** 2 + alpha))
+
+        Bz_segment = C * (Bz_segment2 - Bz_segment1)
+
+
+    return Bz_segment
+
+
+def Bz_arbitrary_contour(coords, height,  I, spacing, cp, material, l, d, nu, direction=True):
+    """
+       Calculates Bz field of arbitrary contour
+
+       Parameters
+       ----------
+       direction :
+           The direction of the current along the contour. If the current flows clockwise, then by default this value is True
+       coord :
+           Coordinates of the beginning and end of each segments
+           Example: coord = [(x1, y1), (x2, y2), ...]
+       g :
+           Calculation domain length
+       I :
+           Current [A]
+       spacing :
+           Spacing between segment and the calculation domain boundary
+       cp :
+           Calculation domain points
+
+       """
+    if not direction:
+        I = -I
+
+    l = []
+    for i in range(len(coords) - 1):
+        l.append(np.sqrt((coords[i][0] - coords[i+1][0])**2 + (coords[i][1] - coords[i+1][1])**2))
+
+    g = np.amax(l)
+
+    Bz_arbitrary_contour = np.zeros((cp, cp, cp))
+    for i in range(len(coords) - 1):
+        Bz_arbitrary_contour += Bz_segment(coords[i][0], coords[i][1], coords[i+1][0], coords[i+1][1], g, I, spacing, cp)
+
+    return Bz_arbitrary_contour
+
+
+def prop_coeff(r, I, spacing, cp):
+    """
+    Calculates the proportionality coefficient
+    ---------------
+    :param r:
+    :param I:
+    :param spacing:
+    :param cp:
+    :return:
+    """
+    prop = []
+
+    for i in range(len(r) - 1):
+        prop.append()
+
 def Bz(a_max,a_min,n,I,spacing,cp,r_i):
     """
     Calculate Bz field of circular multiturn coil
