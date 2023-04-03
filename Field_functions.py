@@ -68,20 +68,15 @@ def COV_circ(Bz,max_coil_r,height,spacing):
     COV = B_std/B_mean
     return COV
 
-def contour_resistance(material, l, d, nu):
+def Coil_resistance(material, l, d, nu):
     """
-        Calculates the contour resistance
-
-        Parameters
-        ----------
-        material :
-            contour material
-        l :
-            contour length
-        d :
-            wire diameter
-        nu:
-            current frequency
+    Calculates the contour resistance
+    ---------------
+    @param material: Contour material
+    @param l: Contour length
+    @param d: Diameter of the conductor cross section
+    @param nu: The frequency of the current in the contour
+    @return: Coil resistance
     """
     Epsilon0 = 8.85419e-12
     omega = 2*np.pi*nu
@@ -92,35 +87,27 @@ def contour_resistance(material, l, d, nu):
         'Copper': 0.017,
         'Gold': 0.024,
         'Aluminum': 0.028,
-        'Tungsten': 0.055
-    }
+        'Tungsten': 0.055}
 
     delta = c * np.sqrt((2*Epsilon0*ro[material]) / omega)
 
     S_eff = np.pi*(d / 2 -delta)**2
 
-    R = ro[material] * (l / S_eff)
+    R = (ro[material] * (l / S_eff))[0]
 
-    return R[0]
-
+    return R
 
 def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
     """
-               Calculates Bz field of single-segment
-
-               Parameters
-               ----------
-               x, y :
-                   Coordinates of the beginning and end of the segment
-               g :
-                   Calculation domain length
-               I :
-                   Current [A]
-               spacing :
-                   Spacing between segment and the calculation domain boundary
-               cp :
-                   Calculation domain points
-
+    Calculates z-component of B field of single-segment
+    ---------------
+    @param x1, y1: The beginning of the segment
+    @param x2, y2: The end of the segment
+    @param g: Length of the largest segment
+    @param I: Current in the contour
+    @param spacing: Spacing between segment and the calculation domain boundary
+    @param cp: Calculation domain points
+    @return: Z-component of B field of single-segment
     """
     mu0 = np.pi * 4e-7
     C = mu0 * I / (4 * np.pi)
@@ -160,31 +147,20 @@ def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
 
         Bz_segment = C * (Bz_segment2 - Bz_segment1)
 
-
     return Bz_segment
 
 
-def Bz_arbitrary_contour(coords, height,  I, spacing, cp, material, l, d, nu, direction=True):
+def Bz_arbitrary_contour(coords,  I, spacing, cp, direction=True):
     """
-       Calculates Bz field of arbitrary contour
-
-       Parameters
-       ----------
-       direction :
-           The direction of the current along the contour. If the current flows clockwise, then by default this value is True
-       coord :
-           Coordinates of the beginning and end of each segments
-           Example: coord = [(x1, y1), (x2, y2), ...]
-       g :
-           Calculation domain length
-       I :
-           Current [A]
-       spacing :
-           Spacing between segment and the calculation domain boundary
-       cp :
-           Calculation domain points
-
-       """
+    Calculates Bz field of arbitrary contour
+    ---------------
+    @param coords: Coordinates of the contour corners
+    @param I: Current in the contour
+    @param spacing: Spacing between segment and the calculation domain boundary
+    @param cp: Calculation domain points
+    @param direction: The direction of the current along the contour. If the current flows clockwise, then by default this value is True
+    @return: Z-component B of the field of one contour
+    """
     if not direction:
         I = -I
 
@@ -203,13 +179,13 @@ def Bz_arbitrary_contour(coords, height,  I, spacing, cp, material, l, d, nu, di
 
 def prop_coeff(r, I, spacing, cp):
     """
-    Calculates the proportionality coefficient
+    Calculates coil reduction ratio
     ---------------
-    :param r:
-    :param I:
-    :param spacing:
-    :param cp:
-    :return:
+    @param r: List of radii
+    @param I: Current in the contour
+    @param spacing: Spacing between segment and the calculation domain boundary
+    @param cp: Calculation domain points
+    @return: Coil reduction ratio
     """
     prop = []
 
