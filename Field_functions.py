@@ -177,20 +177,19 @@ def Bz_arbitrary_contour(coords,  I, spacing, cp, direction=True):
     return Bz_arbitrary_contour
 
 
-def prop_coeff(r, I, spacing, cp):
+def prop_coeff(r):
     """
     Calculates coil reduction ratio
     ---------------
     @param r: List of radii
-    @param I: Current in the contour
-    @param spacing: Spacing between segment and the calculation domain boundary
-    @param cp: Calculation domain points
     @return: Coil reduction ratio
     """
     prop = []
 
     for i in range(len(r) - 1):
-        prop.append()
+        prop.append(r[i+1] / r[i])
+
+    return prop
 
 def Bz(a_max,a_min,n,I,spacing,cp,r_i):
     """
@@ -435,21 +434,22 @@ def Bz_square_single(m,n,I,spacing,cp):
     C = mu0*I/(4*np.pi)
 
     c1 = xv + m/2
-    c2 = xv - m/2
-    c3 = xv - m/2
-    c4 = xv + m/2
+    c2 = -xv + m/2
+    c3 = -c2
+    c4 = -c1
     
     d1 = yv + n/2
     d2 = yv + n/2
     d3 = yv - n/2
     d4 = yv - n/2
-    
-    r1 = np.sqrt(c1**2+d1**2+zv**2)
-    r2 = np.sqrt(c2**2+d2**2+zv**2)
-    r3 = np.sqrt(c3**2+d3**2+zv**2)
-    r4 = np.sqrt(c4**2+d4**2+zv**2)
-  
-    Bz_square = C*((c2/r2/(r2+d2))+(d2/r2/(r2+c2))-(c1/r1/(r1+d1)+d1/r1/(r1+c1))+(c4/r4/(r4+d4)+d4/r4/(r4+c4))-(c3/r3/(r3+d3)+d3/r3/(r3+c3)))
+
+    r1 = np.sqrt(c1 ** 2 + d1 ** 2 + zv ** 2)
+    r2 = np.sqrt(c2 ** 2 + d2 ** 2 + zv ** 2)
+    r3 = np.sqrt(c3 ** 2 + d3 ** 2 + zv ** 2)
+    r4 = np.sqrt(c4 ** 2 + d4 ** 2 + zv ** 2)
+
+    Bz_square = C * (-c2 / (r2 * (r2 + d2)) + d2 / (r2 * (r2 - c2)) - c1 / (r1 * (r1 + d1)) - d1 / (r1 * (r1 + c1)) -
+                     c4 / (r4 * (r4 + d4)) + d4 / (r4 * (r4 - c4)) - c3 / (r3 * (r3 + d3)) - d3 / (r3 * (r3 + c3)))
             
     return Bz_square
 
