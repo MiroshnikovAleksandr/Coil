@@ -16,6 +16,7 @@ turns = [0.5, 0.498, 0.496, 0.494, 0.4349677419354839, 0.3703329864724246, 0.262
 turns = [0.5, 0.498, 0.496, 0.4653548387096774, 0.409681581685744, 0.33337148803329864, 0.19536108220603537]
 turns = [0.4989791366925755, 0.49465199892091494, 0.4893070502223121, 0.4851274611458574, 0.4828771291165515, 0.45175410160866813, 0.3991732570934159, 0.3442020278190352, 0.24223506510855264, 0.07677023841421055]
 turns = [0.5, 0.498, 0.496, 0.494, 0.492, 0.49, 0.47387096774193543, 0.4442913631633715, 0.4027138397502601, 0.3636233090530697, 0.31518210197710717, 0.2310863683662851, 0.05]
+turns = [0.5, 0.498, 0.496, 0.494, 0.492, 0.47580645161290325, 0.4325015608740895, 0.40447242455775234, 0.35228511966701354, 0.2951259105098855, 0.19174817898022894, 0.05]
 
 freq = 6.78      # [MHz]
 c = 299_792_458  # [m/s]
@@ -54,14 +55,17 @@ def normal_solution(turns, freq):
 
 coils = normal_solution(turns, freq)
 Bz_total = np.zeros((cp, cp, cp))
+I_total = 0
 for coil in coils:
     R = 2 * math.pi * sum(coil) * ro
     I = U/R
+    I_total += I
     Bz = ff.Bz(a_max, a_min, len(coil), I, spacing, cp, coil)
     Bz_total += Bz
 
 COV_reavaluated = ff.COV_circ(Bz_total, a_max, height, spacing)
 
-Bz_old = ff.Bz(a_max, a_min, len(turns), 1, spacing, cp, turns)
+
+Bz_old = ff.Bz(a_max, a_min, len(turns), I_total, spacing, cp, turns)
 COV_old = ff.COV_circ(Bz_old, a_max, height, spacing)
 print(f'The reavaluated COV is {COV_reavaluated}\nThe original COV is {COV_old}')

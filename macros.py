@@ -8,7 +8,7 @@ coils = [[0.475, 0.45],
          [0.5, 0.35132674297606653, 0.32168574401664934]]
 
 
-def create_macros(coils):
+def create_circular_macros(coils):
     rad = 'Array(' + ', '.join(f'Array({", ".join(str(r) for r in coil)})' for coil in coils) + ')'
 
     with open('macros.mcs', 'w') as f:
@@ -77,4 +77,168 @@ Next i
 End Sub""")
 
 
-create_macros(coils)
+def create_rectangular_macros(coils):
+    coil_a = 'Array(' + ', '.join(f'Array({", ".join(str(r) for r in coil)})' for coil in coils) + ')'
+    coil_b = 'Array(' + ', '.join(f'Array({", ".join(str(r) + "/2" for r in coil)})' for coil in coils) + ')'
+
+    with open('macros_rectangle.mcs', 'w') as f:
+        f.write(f"""
+
+Sub Main ()
+
+
+Dim coil_a() As Variant, coil_b() As Variant, a As Variant, b As Variant, i As Integer, j As Integer, d_wire As Variant, gap As Variant
+
+coil_a = {coil_a}
+coil_b = {coil_b}
+gap = 0.01
+d_wire = 0.001
+
+For i = 0 To UBound(coil_a)
+		For j = 0 To UBound(coil_a(i))
+			a = coil_a(i)(j)
+			b = coil_b(i)(j)
+			With Polygon
+				.Reset
+				.Name "turn" + Str(i) + Str(j)
+				.Curve "curve1"
+				.Point a/2, 0
+				.LineTo a/2, -b/2
+				.LineTo -a/2, -b/2
+				.LineTo -a/2, b/2
+				.lineTo a/2, b/2
+				.LineTo a/2, gap
+				.Create
+			End With
+		Next j
+Next i
+
+
+
+For i = 0 To UBound(coil_a)
+		For j = 0 To UBound(coil_a(i)) - 1
+			With Polygon3D
+				.Reset
+				.Version 10
+				.Name "connection" + Str(i) + Str(j)
+				.Curve "curve1"
+				.Point coil_a(i)(j)/2,0,0
+				.Point coil_a(i)(j)/2,0,i*d_wire*2
+				.Point coil_a(i)(j+1)/2,gap,i*d_wire*2
+				.Point coil_a(i)(j+1)/2,gap,0
+				.Create
+			End With
+		Next j
+Next i
+
+
+For i = 0 To UBound(coil_a)
+		With Polygon3D
+			.Reset
+			.Version 10
+			.Name "line" + Str(i) + Str(j)
+			.Curve "curve1"
+			.Point coil_a(i)(0)/2,gap,0
+			.Point coil_a(i)(0)/2,gap,(UBound(coil_a)+1)*d_wire*2
+			.Create
+		End With
+Next i
+
+For i = 0 To UBound(coil_a)
+		With Polygon3D
+			.Reset
+			.Version 10
+			.Name "line2" + Str(i) + Str(j)
+			.Curve "curve1"
+			.Point coil_a(i)(UBound(coil_a(i)))/2, 0, 0
+			.Point coil_a(i)(UBound(coil_a(i)))/2, 0, (UBound(coil_a)+1)*d_wire*2
+			.Create
+		End With
+Next i
+
+
+
+
+End Sub""")
+
+
+def create_square_macros(coils):
+    coil_a = 'Array(' + ', '.join(f'Array({", ".join(str(r) for r in coil)})' for coil in coils) + ')'
+
+    with open('macros_square.mcs', 'w') as f:
+        f.write(f"""' macros
+
+Sub Main ()
+
+
+Dim coil_a() As Variant, a As Variant, i As Integer, j As Integer, d_wire As Variant, gap As Variant
+
+coil_a = {coil_a}
+gap = 0.01
+d_wire = 0.001
+
+For i = 0 To UBound(coil_a)
+		For j = 0 To UBound(coil_a(i))
+			a = coil_a(i)(j)
+			With Polygon
+				.Reset
+				.Name "turn" + Str(i) + Str(j)
+				.Curve "curve1"
+				.Point a/2, 0
+				.LineTo a/2, -a/2
+				.LineTo -a/2, -a/2
+				.LineTo -a/2, a/2
+				.lineTo a/2, a/2
+				.LineTo a/2, gap
+				.Create
+			End With
+		Next j
+Next i
+
+
+
+For i = 0 To UBound(coil_a)
+		For j = 0 To UBound(coil_a(i)) - 1
+			With Polygon3D
+				.Reset
+				.Version 10
+				.Name "connection" + Str(i) + Str(j)
+				.Curve "curve1"
+				.Point coil_a(i)(j)/2,0,0
+				.Point coil_a(i)(j)/2,0,i*d_wire*2
+				.Point coil_a(i)(j+1)/2,gap,i*d_wire*2
+				.Point coil_a(i)(j+1)/2,gap,0
+				.Create
+			End With
+		Next j
+Next i
+
+
+For i = 0 To UBound(coil_a)
+		With Polygon3D
+			.Reset
+			.Version 10
+			.Name "line" + Str(i) + Str(j)
+			.Curve "curve1"
+			.Point coil_a(i)(0)/2,gap,0
+			.Point coil_a(i)(0)/2,gap,(UBound(coil_a)+1)*d_wire*2
+			.Create
+		End With
+Next i
+
+For i = 0 To UBound(coil_a)
+		With Polygon3D
+			.Reset
+			.Version 10
+			.Name "line2" + Str(i) + Str(j)
+			.Curve "curve1"
+			.Point coil_a(i)(UBound(coil_a(i)))/2, 0, 0
+			.Point coil_a(i)(UBound(coil_a(i)))/2, 0, (UBound(coil_a)+1)*d_wire*2
+			.Create
+		End With
+Next i
+
+
+
+
+End Sub""")

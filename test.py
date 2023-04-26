@@ -1,6 +1,9 @@
 import random
 import sys
 
+import numpy as np
+import math
+
 a_max = 0.5  # [m] Max coil radius
 a_min = 0.05  # [m] Min coil radius
 minimal_gap = 0.002
@@ -42,7 +45,3 @@ def bounds(ind):
         bounds.append((a_min, radiuses[i - 1] - i*minimal_gap))
 
     return bounds
-
-
-def decode(ind):
-

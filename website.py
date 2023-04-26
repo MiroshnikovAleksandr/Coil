@@ -19,8 +19,8 @@ with st.sidebar:
     st.header("Электрические параметры")
     col1, col2 = st.columns([3, 1])
     with col1:
-        frequency = st.number_input('Частота')
-        voltage = st.number_input('Напряжение')
+        frequency = st.number_input('Частота', value=0.001)
+        voltage = st.number_input('Напряжение', value=)
     with col2:
         frequency_ = st.selectbox('', ('мГц', 'Гц', 'кГц'))
         voltage = st.selectbox('', ('Вт'))
