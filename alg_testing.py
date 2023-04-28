@@ -6,7 +6,7 @@ import scienceplots
 
 n = 2  # number of points in each data array
 
-plt.style.use(['science'])
+plt.style.use(['science', 'ieee', 'no-latex'])
 
 with open('parameters.toml', 'rb') as toml:
     parameters = tomli.load(toml)
@@ -26,8 +26,8 @@ def stop_criteria(GA):
     return res[0]
 
 
-CXPB = np.linspace(0.4, 0.6, n)
-MUTPB = np.linspace(0.1, 0.2, n)
+CXPB = np.linspace(0.0, 1.0, n)
+MUTPB = np.linspace(0.0, 1.0, n)
 
 matrix = []
 for cxpb in CXPB:
@@ -51,6 +51,9 @@ ax.plot_surface(np.outer(CXPB, np.ones(n)),
                 np.array(matrix),
                 cmap='magma')
 
+print(f"The minimal Final epoch value of {np.min(matrix)} is achieved at indices ({np.argmin(matrix)//n}, "
+      f"{np.argmin(matrix)%n}).")
+print(f'CXPB is {CXPB[np.argmin(matrix)//n]}, MUTPB is {MUTPB[np.argmin(matrix)%n]}.')
 plt.show()
-
+plt.savefig('pic.jpg')
 # print(stop_criteria(Genetic(parameters)))
