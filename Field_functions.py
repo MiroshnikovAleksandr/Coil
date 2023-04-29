@@ -68,9 +68,22 @@ def COV_circ(Bz,max_coil_r,height,spacing):
     COV = B_std/B_mean
     return COV
 
+def COV_square(Bz, max_side, height, spacing):
+    """
+    Coefficient of variation calculation for square coil
+     ---------------
+     @param Bz: Field for CoV calculation
+     @param max_side: Maximum side of square
+     @param height:
+    """
+    calc_radius = max_side * spacing
+
+    view_line = int(height / (2 * calc_radius / len(Bz)) + len(Bz) / 2)
+
+
 def Coil_resistance(material, l, d, nu):
     """
-    Calculates the contour resistance
+    Calculates the coil resistance
     ---------------
     @param material: Contour material
     @param l: Contour length
@@ -78,24 +91,46 @@ def Coil_resistance(material, l, d, nu):
     @param nu: The frequency of the current in the contour
     @return: Coil resistance
     """
+
     Epsilon0 = 8.85419e-12
     omega = 2*np.pi*nu
     c = 299792458
 
     ro = {
         'Silver': 0.016,
-        'Copper': 0.017,
+        'Copper': 0.0168,
         'Gold': 0.024,
         'Aluminum': 0.028,
         'Tungsten': 0.055}
 
+    ro[material] = ro[material]*1e-6
+
     delta = c * np.sqrt((2*Epsilon0*ro[material]) / omega)
 
-    S_eff = np.pi*(d / 2 -delta)**2
+    S_eff = np.pi*(d / 2)**2 - np.pi * (d/2 - delta) **2
 
-    R = (ro[material] * (l / S_eff))[0]
+    R = (ro[material] * (l / S_eff))
 
     return R
+
+def resistance_contour(prop, max_r, material, d, nu):
+    """
+    Calculates the contour resistance
+    ---------------
+    @param prop: Coil reduction ratio
+    @param max_r: Maximum length of the coil
+    @param material: Contour material
+    @param d: Diameter of the conductor cross section
+    @param nu: The frequency of the current in the contour
+    @return: Contour resistance
+    """
+    coils = [max_r]
+    for i in prop:
+        coils.append(i*max_r)
+    R = []
+    for i in coils:
+        R.append(Coil_resistance(material, 2 * np.pi * i, d, nu))
+    return (np.sum(list(map(lambda x: x ** (-1), R)))) ** (-1)
 
 def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
     """
@@ -169,6 +204,7 @@ def Bz_arbitrary_contour(coords,  I, spacing, cp, direction=True):
         l.append(np.sqrt((coords[i][0] - coords[i+1][0])**2 + (coords[i][1] - coords[i+1][1])**2))
 
     g = np.amax(l)
+    I = np.sqrt(2)*I
 
     Bz_arbitrary_contour = np.zeros((cp, cp, cp))
     for i in range(len(coords) - 1):
@@ -187,7 +223,7 @@ def prop_coeff(r):
     prop = []
 
     for i in range(len(r) - 1):
-        prop.append(r[i+1] / r[i])
+        prop.append(np.sum(r[i+1]) / np.sum(r[i]))
 
     return prop
 
