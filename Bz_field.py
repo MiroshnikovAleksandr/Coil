@@ -146,15 +146,15 @@ def Bz_square_single(m, n, I, spacing, cp):
 
     C = mu0 * I / (4 * np.pi)
 
-    c1 = xv + m / 2
-    c2 = -xv + m / 2
+    c1 = xv + max([m, n]) / 2
+    c2 = -xv + max([m, n]) / 2
     c3 = -c2
     c4 = -c1
 
-    d1 = yv + n / 2
-    d2 = yv + n / 2
-    d3 = yv - n / 2
-    d4 = yv - n / 2
+    d1 = yv + min(m, n) / 2
+    d2 = yv + min(m, n) / 2
+    d3 = yv - min(m, n) / 2
+    d4 = yv - min(m, n) / 2
 
     r1 = np.sqrt(c1 ** 2 + d1 ** 2 + zv ** 2)
     r2 = np.sqrt(c2 ** 2 + d2 ** 2 + zv ** 2)

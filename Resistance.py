@@ -47,7 +47,7 @@ def Coil_resistance(material, l, d, nu):
 
     return R
 
-def resistance_contour(prop, max_r, material, d, nu):
+def resistance_contour(prop, max_r, material, d, nu, ):
     """
     Calculates the contour resistance
     ---------------
