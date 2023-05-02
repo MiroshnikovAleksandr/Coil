@@ -72,8 +72,8 @@ def Bz_arbitrary_contour(coords,  I, spacing, cp, direction=True):
         I = -I
 
     l = []
-    for i in range(len(coords) - 1):
-        l.append(np.sqrt((coords[i][0] - coords[i+1][0])**2 + (coords[i][1] - coords[i+1][1])**2))
+    for i in range(len(coords)):
+        l.append(np.sqrt((coords[i][0])**2 + (coords[i][1])**2))
 
     g = np.amax(l)
     I = np.sqrt(2)*I

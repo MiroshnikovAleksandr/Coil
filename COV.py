@@ -144,7 +144,7 @@ def COV_arbitrary_contour(Bz, coords, height, spacing, P):
 
     l = []
     for i in range(len(coords)):
-        l.append((coords[i][0]-coords[i+1][0])**2 + (coords[i][1] - coords[i+1][1])**2)
+        l.append((coords[i][0])**2 + (coords[i][1])**2)
 
     calc_radius = max(l) * spacing
     cell_size = 2 * calc_radius / (cp + 1)
