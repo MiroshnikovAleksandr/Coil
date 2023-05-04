@@ -3,7 +3,6 @@ import math
 from scipy.special import ellipk,ellipkm1, ellipe
 
 
-"""Arbitrary contour"""
 def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
     """
     Calculates z-component of B field of single-segment
@@ -57,7 +56,7 @@ def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
     return Bz_segment
 
 
-def Bz_arbitrary_contour(coords,  I, spacing, cp, direction=True):
+def Bz_piecewise_linear_contour_single(coords,  I, spacing, cp, direction=True):
     """
     Calculates Bz field of arbitrary contour
     ---------------
@@ -66,7 +65,7 @@ def Bz_arbitrary_contour(coords,  I, spacing, cp, direction=True):
     @param spacing: Spacing between segment and the calculation domain boundary
     @param cp: Calculation domain points
     @param direction: The direction of the current along the contour. If the current flows clockwise, then by default this value is True
-    @return: Z-component B of the field of one contour
+    @return: Z-component B of the field of single coil
     """
     if not direction:
         I = -I
@@ -78,17 +77,24 @@ def Bz_arbitrary_contour(coords,  I, spacing, cp, direction=True):
     g = np.amax(l)
     I = np.sqrt(2)*I
 
-    Bz_arbitrary_contour = np.zeros((cp, cp, cp))
-    for i in range(len(coords) - 1):
-        Bz_arbitrary_contour += Bz_segment(coords[i][0], coords[i][1], coords[i+1][0], coords[i+1][1], g, I, spacing, cp)
+    Bz_piecewise_linear_contour_single = np.zeros((cp, cp, cp))
+    for i in range(len(coords)):
+        try:
+            Bz_piecewise_linear_contour_single += Bz_segment(coords[i][0], coords[i][1], coords[i + 1][0], coords[i + 1][1], g, I, spacing, cp)
+        except IndexError:
+            Bz_piecewise_linear_contour_single += Bz_segment(coords[0][0], coords[0][1], coords[i][0], coords[i][1], g, I, spacing, cp)
 
-    return Bz_arbitrary_contour
+    return Bz_piecewise_linear_contour_single
 
-"""Circular contour"""
-def Bz_circular(a, I, spacing, cp):
+
+def Bz_piecewise_linear_contour(coords,  I, spacing, cp, direction=True):
+    pass
+
+
+def Bz_circular_single(a, I, spacing, cp):
     """
-    Calculate Bz field of sincle-turn circular turn
-
+    Calculates the Bz field of a single circular coil
+    ---------------
     Parameters
     ----------
     a :
@@ -119,25 +125,27 @@ def Bz_circular(a, I, spacing, cp):
 
     return Bz
 
-"""Square contour"""
+
+def Bz_circular_contour(R, I, spacing, cp):
+    """"""
+    Bz_circular_contour = np.zeros([cp, cp, cp])
+
+    for r in R:
+        Bz_circular_contour += Bz_circular_single(r, I, spacing, cp)
+
+    return Bz_circular_contour
+
 
 def Bz_square_single(m, n, I, spacing, cp):
     """
-    Calculate Bz field of sincle-turn circular turn
-
-    Parameters
-    ----------
-    m :
-        Side length x [m]
-    n :
-        Side length y [m]
-    I :
-        Current [A]
-    spacing :
-        Spacing between coil and the calculation domain boundary
-    cp :
-        Calculation domain points
-
+    Calculates the Bz field of a single square coil
+    ---------------
+    @param m: Side parallel to the x-axis
+    @param n: Side parallel to the y-axis
+    @param I: Current in the contour
+    @param spacing: Spacing between segment and the calculation domain boundary
+    @param cp: Calculation domain points
+    @return: Z-component B of the field of single coil
     """
     mu0 = np.pi * 4e-7
     calc_radius = np.amax([m, n]) * spacing  # Calculation domain length
@@ -146,15 +154,15 @@ def Bz_square_single(m, n, I, spacing, cp):
 
     C = mu0 * I / (4 * np.pi)
 
-    c1 = xv + max([m, n]) / 2
-    c2 = -xv + max([m, n]) / 2
+    c1 = xv + m / 2
+    c2 = -xv + m / 2
     c3 = -c2
     c4 = -c1
 
-    d1 = yv + min(m, n) / 2
-    d2 = yv + min(m, n) / 2
-    d3 = yv - min(m, n) / 2
-    d4 = yv - min(m, n) / 2
+    d1 = yv + n / 2
+    d2 = yv + n / 2
+    d3 = yv - n / 2
+    d4 = yv - n / 2
 
     r1 = np.sqrt(c1 ** 2 + d1 ** 2 + zv ** 2)
     r2 = np.sqrt(c2 ** 2 + d2 ** 2 + zv ** 2)
@@ -165,3 +173,13 @@ def Bz_square_single(m, n, I, spacing, cp):
                      c4 / (r4 * (r4 + d4)) + d4 / (r4 * (r4 - c4)) - c3 / (r3 * (r3 + d3)) - d3 / (r3 * (r3 + c3)))
 
     return Bz_square
+
+
+def Bz_square_contour(X_sides, Y_sides, I, spacing, cp):
+    """"""
+    Bz_square_contour = np.zeros([cp, cp, cp])
+
+    for x, y in zip(X_sides, Y_sides):
+        Bz_square_contour += Bz_square_single(x, y, I, spacing, cp)
+
+    return Bz_square_contour
