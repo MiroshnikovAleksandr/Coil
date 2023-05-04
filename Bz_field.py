@@ -3,6 +3,14 @@ import math
 from scipy.special import ellipk,ellipkm1, ellipe
 
 
+def prop_coeff(R):
+    prop = []
+    for r in range(len(R)-1):
+        prop.append(r[i]/r[i+1])
+
+    return prop
+
+
 def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
     """
     Calculates z-component of B field of single-segment
@@ -56,7 +64,7 @@ def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
     return Bz_segment
 
 
-def Bz_piecewise_linear_contour_single(coords,  I, spacing, cp, direction=True):
+def Bz_piecewise_linear_contour_single(coords,  I, spacing, cp, direction):
     """
     Calculates Bz field of arbitrary contour
     ---------------
@@ -87,8 +95,24 @@ def Bz_piecewise_linear_contour_single(coords,  I, spacing, cp, direction=True):
     return Bz_piecewise_linear_contour_single
 
 
-def Bz_piecewise_linear_contour(coords,  I, spacing, cp, direction=True):
-    pass
+def Bz_piecewise_linear_contour(R, coords,  I, spacing, cp, direction=True):
+    """
+    Calculates the Bz field for a piecewise linear contour
+    """
+    prop = prop_coeff(R)
+    list_of_coords = [coords]
+    for k in prop:
+        new_coords = []
+        for point in coords:
+            new_coords.append([point[0]*k, point[1]*k])
+        list_of_coords.append(new_coords)
+
+    Bz_piecewise_linear_contour = np.zeros([cp, cp, cp])
+
+    for coil in list_of_coords:
+        Bz_piecewise_linear_contour += Bz_piecewise_linear_contour_single(coil, I, spacing, cp, direction)
+
+    return Bz_piecewise_linear_contour
 
 
 def Bz_circular_single(a, I, spacing, cp):
@@ -127,11 +151,14 @@ def Bz_circular_single(a, I, spacing, cp):
 
 
 def Bz_circular_contour(R, I, spacing, cp):
-    """"""
+    """
+    Calculates the Bz field for a circular contour
+    """
     Bz_circular_contour = np.zeros([cp, cp, cp])
 
     for r in R:
         Bz_circular_contour += Bz_circular_single(r, I, spacing, cp)
+
 
     return Bz_circular_contour
 
@@ -175,8 +202,17 @@ def Bz_square_single(m, n, I, spacing, cp):
     return Bz_square
 
 
-def Bz_square_contour(X_sides, Y_sides, I, spacing, cp):
-    """"""
+def Bz_square_contour(R, X_side, Y_side, I, spacing, cp):
+    """
+    Calculates the Bz field for a square contour
+    ---------------
+    """
+    prop = prop_coeff(R)
+    X_sides, Y_sides = [], []
+    for k in prop:
+        X_sides.append(X_side*k)
+        Y_sides.append(Y_side*k)
+
     Bz_square_contour = np.zeros([cp, cp, cp])
 
     for x, y in zip(X_sides, Y_sides):

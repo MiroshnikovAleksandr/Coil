@@ -1,20 +1,6 @@
 import numpy as np
 
 
-def prop_coeff(r):
-    """
-    Calculates coil reduction ratio
-    ---------------
-    @param r: List of radii
-    @return: Coil reduction ratio
-    """
-    prop = []
-
-    for i in range(len(r) - 1):
-        prop.append(np.sum(r[i+1]) / np.sum(r[i]))
-
-    return prop
-
 def Coil_resistance(material, l, d, nu):
     """
     Calculates the coil resistance
@@ -47,21 +33,47 @@ def Coil_resistance(material, l, d, nu):
 
     return R
 
-def resistance_contour(prop, max_r, material, d, nu, ):
+def resistance_contour(l, material, d, nu):
     """
     Calculates the contour resistance
     ---------------
-    @param prop: Coil reduction ratio
-    @param max_r: Maximum length of the coil
+    @param l: Array of lengths of parallel connected coils
     @param material: Contour material
     @param d: Diameter of the conductor cross section
     @param nu: The frequency of the current in the contour
     @return: Contour resistance
     """
-    coils = [max_r]
-    for i in prop:
-        coils.append(i*max_r)
-    R = []
-    for i in coils:
-        R.append(Coil_resistance(material, 2 * np.pi * i, d, nu))
-    return (np.sum(list(map(lambda x: x ** (-1), R)))) ** (-1)
+    Resistance_coil = []
+    for i in l:
+        Resistance_coil.append(Coil_resistance(material, l, d, nu))
+    return (np.sum(list(map(lambda x: x ** (-1), Resistance_coil)))) ** (-1)
+
+
+def length_circular_coils(coils):
+    l = []
+    for coil in coils:
+        l.append(2 * np.pi * np.sum(coil))
+    return l
+
+
+def length_square_coils(coils):
+    l = []
+    for coil in coils:
+        lenght_coil = 0
+        for i in coil:
+            lenght_coil += np.sum(i)
+        l.append(lenght_coil)
+    return l
+
+
+def length_piecewise_linear_coils(coils):
+    l = []
+    for coil in coils:
+        lenght_coil = 0
+        for i in range(len(coil)):
+            try:
+                lenght_coil += np.sqrt((coil[i][0] - coil[i+1][0])**2 + (coil[i][1] - coil[i+1][1])**2)
+            except IndexError:
+                lenght_coil += np.sqrt((coil[0][0] - coil[i][0]) ** 2 + (coil[0][1] - coil[i][1]) ** 2)
+        l.append(lenght_coil)
+    return l

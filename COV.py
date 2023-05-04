@@ -8,7 +8,7 @@ def dist(x1, y1, x2, y2):
     ---------------
     @param x1, y1: Сoordinates of the first point
     @param x2, y2: Coordinates of the second point
-    @return: The distance  between two points
+    @return: The distance between two points
     """
     return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
@@ -27,7 +27,7 @@ def mask_circular(tiles, cx, cy, r):
             if dist(cx, cy, x, y) <= r:
                 tiles[x][y] = 1
 
-def mask_square(tiles, cx, cy, max_side, min_side):
+def mask_square(tiles, cx, cy, X_side, Y_side):
     """
     Creates a square binary mask
     ---------------
@@ -37,8 +37,8 @@ def mask_square(tiles, cx, cy, max_side, min_side):
     @param min_side: The smallest side of the calculation domain is in points
     @return: A square binary mask
     """
-    for x in range(cx-max_side, cx+max_side):
-        for y in range(cy-min_side, cy+min_side):
+    for x in range(cx-X_side, cx+X_side):
+        for y in range(cy-Y_side, cy+Y_side):
             tiles[x][y] = 1
 
 def mask_piecewise_linear(tiles, coords):
@@ -114,14 +114,14 @@ def COV_circle(Bz, max_coil_r, height, spacing, P):
     return COV
 
 
-def COV_square(Bz, max_side, min_side, height, spacing, P):
+def COV_square(Bz, X_side, Y_side, height, spacing, P):
     """
     Calculates the coefficient of variation for a square coil
     ---------------
     @param Bz: Field for calculating the COV
-    @param max_side: The largest side of a square [m]
-    @param min_side: The smallest side of a square [m]
-    @param height: Height above the coil [m]
+    @param X_side: Side parallel to the x-axis
+    @param Y_side: Side parallel to the y-axis
+    @param height: Height above the coil
     @param spacing: Spacing between coil and the calculation domain boundary
     @param P: The boundary of the calculation of the COV
     @return: COV
@@ -130,15 +130,15 @@ def COV_square(Bz, max_side, min_side, height, spacing, P):
     cx = cp // 2
     cy = cp // 2
 
-    calc_radius = max_side * spacing
+    calc_radius = max([X_side, Y_side]) * spacing
     cell_size = 2*calc_radius / (cp+1)
     view_plane = round(height/cell_size) + 1 + round(cp / 2)
     tiles = np.zeros((0, 0))
 
-    max_side_COV = max_side * P / cell_size
-    min_side_COV = min_side * P / cell_size
+    X_side_COV = X_side * P / cell_size
+    Y_side_COV = Y_side * P / cell_size
 
-    mask_square(tiles, cx, cy, round(max_side_COV), round(min_side_COV))
+    mask_square(tiles, cx, cy, round(X_side_COV), round(Y_side_COV))
 
     Bz_masked = np.multiply(Bz[:, :, view_plane], tiles)
 
@@ -181,13 +181,3 @@ def COV_piecewise_linear(Bz, coords, height, spacing, P):
     Bz_std = np.sqrt((np.sum((Bz_masked  -np.multiply(Bz_mean, tiles))**2)) / (np.sum(tiles)))
     COV = Bz_std / Bz_mean
     return COV
-
-
-
-
-
-
-
-
-
-
