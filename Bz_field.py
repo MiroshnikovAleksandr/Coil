@@ -5,10 +5,33 @@ from scipy.special import ellipk,ellipkm1, ellipe
 
 def prop_coeff(R):
     prop = []
-    for r in range(len(R)-1):
-        prop.append(r[i]/r[i+1])
+    for i in range(len(R)-1):
+        prop.append(R[i]/R[i+1])
 
     return prop
+
+
+def R_in_sides_square(R, X_side, Y_side):
+    """"""
+    prop = prop_coeff(R)
+    X_sides, Y_sides = [X_side], [Y_side]
+    for k in prop:
+        X_sides.append(X_side * k)
+        Y_sides.append(Y_side * k)
+
+    return X_sides, Y_sides
+
+
+def R_in_coords(R, coords_max):
+    """"""
+    prop = prop_coeff(R)
+    list_of_coords = [coords_max]
+    for k in prop:
+        new_coords = []
+        for point in coords_max:
+            new_coords.append([point[0] * k, point[1] * k])
+        list_of_coords.append(new_coords)
+    return list_of_coords
 
 
 def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
@@ -99,13 +122,7 @@ def Bz_piecewise_linear_contour(R, coords,  I, spacing, cp, direction=True):
     """
     Calculates the Bz field for a piecewise linear contour
     """
-    prop = prop_coeff(R)
-    list_of_coords = [coords]
-    for k in prop:
-        new_coords = []
-        for point in coords:
-            new_coords.append([point[0]*k, point[1]*k])
-        list_of_coords.append(new_coords)
+    list_of_coords = R_in_coords(R, coords)
 
     Bz_piecewise_linear_contour = np.zeros([cp, cp, cp])
 
@@ -207,11 +224,7 @@ def Bz_square_contour(R, X_side, Y_side, I, spacing, cp):
     Calculates the Bz field for a square contour
     ---------------
     """
-    prop = prop_coeff(R)
-    X_sides, Y_sides = [], []
-    for k in prop:
-        X_sides.append(X_side*k)
-        Y_sides.append(Y_side*k)
+    X_sides, Y_sides = R_in_sides_square(R, X_side, Y_side)
 
     Bz_square_contour = np.zeros([cp, cp, cp])
 

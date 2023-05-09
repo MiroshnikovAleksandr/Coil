@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import copy
 
 
 def dist(x1, y1, x2, y2):
@@ -11,6 +12,21 @@ def dist(x1, y1, x2, y2):
     @return: The distance between two points
     """
     return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+
+def if_one(cut, S=0):
+    for j in range(len(cut) - 1):
+        if cut[j] == 1 and cut[j+1] == 1:
+            S += 1
+            return if_one(cut[j + 1 : len(cut)], S)
+        elif cut[j] == 1 and cut[j+1] != 1:
+            return S
+
+
+def index_of_element(array, element):
+    for index in range(len(array)):
+        if array[index] == element:
+            return index
 
 
 def mask_circular(tiles, cx, cy, r):
@@ -54,33 +70,96 @@ def mask_piecewise_linear(tiles, coords):
             x1, y1 = coords[i][0], coords[i][1]
             x2, y2 = coords[i + 1][0], coords[i + 1][1]
             X = []
-            for x in range(x1, x2 + 1):
-                X.append(x)
             Y = []
-            for y in range(y1, y2 + 1):
-                Y.append(y)
-            for x, y in zip(X, Y):
-                tiles[x][y] = 1
+            if y1 > y2:
+                for y in range(y2, y1 + 1):
+                    Y.append(y)
+            elif y1 <= y2:
+                for y in range(y1, y2 + 1):
+                    Y.append(y)
+            if x1 > x2:
+                for x in range(x2, x1 + 1):
+                    X.append(x)
+            elif x1 <= x2:
+                for x in range(x1, x2 + 1):
+                    X.append(x)
+            if len(X) == 1:
+                x = x1
+                for y in Y:
+                    tiles[y][x] = 1
+            elif len(Y) == 1:
+                y = y1
+                for x in X:
+                    tiles[y][x] = 1
+            else:
+                for x, y in zip(X, Y):
+                    tiles[y][x] = 1
+            X.clear()
+            Y.clear()
         except IndexError:
             x1, y1 = coords[0][0], coords[0][1]
             x2, y2 = coords[i][0], coords[i][1]
             X = []
-            for x in range(x1, x2 + 1):
-                X.append(x)
             Y = []
-            for y in range(y1, y2 + 1):
-                Y.append(y)
-            for x, y in zip(X, Y):
-                tiles[x][y] = 1
-    for y in range(len(tiles)):
-        cut = tiles[:, y]
-        indexes = []
-        for x in len(cut):
-            if cut[x]==1:
-                indexes.append(x)
-        for x in range(indexes[0], indexes[1]+1):
-            tiles[x][y] = 1
+            if y1 > y2:
+                for y in range(y2, y1 + 1):
+                    Y.append(y)
+            elif y1 <= y2:
+                for y in range(y1, y2 + 1):
+                    Y.append(y)
+            if x1 > x2:
+                for x in range(x2, x1 + 1):
+                    X.append(x)
+            elif x1 <= x2:
+                for x in range(x1, x2 + 1):
+                    X.append(x)
+            if len(X) == 1:
+                x = x1
+                for y in Y:
+                    tiles[y][x] = 1
+            elif len(Y) == 1:
+                y = y1
+                for x in X:
+                    tiles[y][x] = 1
+            else:
+                for x, y in zip(X, Y):
+                    tiles[y][x] = 1
+            X.clear()
+            Y.clear()
 
+    for y in range(len(tiles)):
+        cut = tiles[y, :]
+        indexes_contour, indexes_vertexes, indexes_rib = [], [], []
+        for x in range(len(cut) - 1):
+            if cut[x] == 1:
+                indexes_contour.append(x)
+                if ([x, y] in coords) and (cut[x+1] != 1) and(cut[x-1] != 1):
+                    index = index_of_element(coords, [x, y])
+                    if (index < len(coords) - 1) and (index > 0):
+                        if ((y < coords[index + 1][1]) and (y < coords[index - 1][1])) or ((y > coords[index + 1][1]) and (y > coords[index - 1][1])):
+                            indexes_vertexes.append(x)
+                    else:
+                        if ((y < coords[0][1]) and (y < coords[len(coords) - 1][1])) or ((y > coords[0][1]) and (y > coords[len(coords) - 1][1])):
+                            indexes_vertexes.append(x)
+                elif ([x, y] in coords) and (cut[x+1] == 1):
+                    cut_copy = copy.deepcopy(cut)
+                    last_one = x + 1 + if_one(cut_copy[x + 1:])
+                    for i in range(x, last_one):
+                        indexes_rib.append(i)
+        for element in indexes_vertexes:
+            indexes_contour.remove(element)
+        for element in indexes_rib:
+            indexes_contour.remove(element)
+
+        for index in range(0, len(indexes_contour) - 1, 2):
+            for x in range(indexes_contour[index] + 1, indexes_contour[index + 1]):
+                tiles[y][x] = 1
+        indexes_contour.clear()
+        indexes_vertexes.clear()
+        indexes_rib.clear()
+
+
+    print('///')
 
 def COV_circle(Bz, max_coil_r, height, spacing, P):
     """
@@ -161,19 +240,21 @@ def COV_piecewise_linear(Bz, coords, height, spacing, P):
     @return: COV
     """
     cp = len(Bz)
+    cx = cp // 2
+    cy = cp // 2
 
     l = []
     for i in range(len(coords)):
-        l.append((coords[i][0])**2 + (coords[i][1])**2)
+        l.append(np.sqrt((coords[i][0])**2 + (coords[i][1])**2))
 
     calc_radius = max(l) * spacing
-    cell_size = 2 * calc_radius / (cp + 1)
-    view_plane = round(height / cell_size) + 1 + round(cp / 2)
-    tiles = np.zeros((0, 0))
+    cell_size = 2 * calc_radius / cp
+    view_plane = int(height / cell_size + cp / 2)
+    tiles = np.zeros((cp, cp))
 
     coords_COV = []
     for i in coords:
-        coords_COV.append([round(i[0] * P / cell_size), round(i[1] * P / cell_size)])
+        coords_COV.append([int(cx + i[0] * P / cell_size), int(cy + i[1] * P / cell_size)])
 
     mask_piecewise_linear(tiles, coords_COV)
     Bz_masked = np.multiply(tiles, Bz[:, :, view_plane])

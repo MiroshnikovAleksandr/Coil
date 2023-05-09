@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+import numpy as np
+from Bz_field import R_in_coords, R_in_sides_square
 
 
 def plot_2d(Bz, height, a_max, spacing, cp):
@@ -81,11 +83,13 @@ def plot_coil(a_max, spacing, r_i):
     plt.show()
 
 
-def plot_square_coil(m_max, n_max, spacing, m_i, n_i):
+def plot_square_coil(m_max, n_max, spacing, R):
     """
 
 
     """
+    m_i, n_i = R_in_sides_square(R, m_max, n_max)
+
     fig = plt.figure(figsize=(3, 3), dpi=300)
     ax = fig.subplots()
     max_size = np.max([m_max, n_max]) * spacing
@@ -101,5 +105,30 @@ def plot_square_coil(m_max, n_max, spacing, m_i, n_i):
 
         plt.xlabel('x [m]')
         plt.ylabel('y [m]')
+
+    plt.show()
+
+
+def plot_piecewise_linear_coil(coords_max, spacing, R):
+    """"""
+    fig = plt.figure(figsize=(5, 5), dpi=100)
+    ax = fig.subplots()
+    l = []
+    for i in range(len(coords_max)-1):
+        l.append(np.sqrt(coords_max[i][0]**2 + coords_max[i][1]**2))
+
+    r_max = max(l) * spacing
+
+    ax.set_xlim((-r_max, r_max))
+    ax.set_ylim((-r_max, r_max))
+
+    list_of_coords = R_in_coords(R, coords_max)
+
+    for coords in list_of_coords:
+        for i in range(len(coords)):
+            try:
+                plt.plot([coords[i][0], coords[i + 1][0]], [coords[i][1], coords[i + 1][1]], color='#000000')
+            except IndexError:
+                plt.plot([coords[0][0], coords[i][0]], [coords[0][1], coords[i][1]], color='#000000')
 
     plt.show()
