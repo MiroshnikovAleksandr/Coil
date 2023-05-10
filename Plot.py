@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from Bz_field import R_in_coords, R_in_sides_square
+from Bz_field import Radii_in_coords, Radii_in_sides_square
 
 
 def plot_2d(Bz, height, a_max, spacing, cp):
@@ -17,6 +17,8 @@ def plot_2d(Bz, height, a_max, spacing, cp):
     plt.xlabel('x [cm]')
     plt.ylabel('Bz [uT]')
     plt.title('Bz Field at {} mm height'.format(height * 1e3))
+
+    plt.show()
 
 
 def plot_3d(Bz, height, a_max, spacing, cp):
@@ -59,19 +61,20 @@ def plot_vector(Bz, height, a_max, spacing, cp):
     plt.show()
 
 
-def plot_coil(a_max, spacing, r_i):
+def plot_coil(a_max, spacing, R):
     """
-
-
+    Draws a circular coil
+    ---------------
+    @param R: Radius of the largest turn
+    @param spacing: Spacing between coil and the calculation domain boundary
+    @param R: Set of radii
     """
     fig = plt.figure(figsize=(3, 3), dpi=300)
 
     ax = fig.subplots()
-    # ax.set_xlim((0, 2*a_max*spacing))
-    # ax.set_ylim((0, 2*a_max*spacing))
     ax.set_xlim((-a_max * spacing, a_max * spacing))
     ax.set_ylim((-a_max * spacing, a_max * spacing))
-    for i, radius in enumerate(r_i):
+    for i, radius in enumerate(R):
         # circle = plt.Circle((a_max*spacing, a_max*spacing), radius, fill=False)
         circle = plt.Circle((0, 0), radius, fill=False)
 
@@ -85,8 +88,12 @@ def plot_coil(a_max, spacing, r_i):
 
 def plot_square_coil(m_max, n_max, spacing, R):
     """
-
-
+    Draws a rectangular coil
+    ---------------
+    @param m: Side parallel to the x-axis of the largest turn
+    @param n: Side parallel to the y-axis of the largest turn
+    @param spacing: Spacing between coil and the calculation domain boundary
+    @param R: Set of radii
     """
     m_i, n_i = R_in_sides_square(R, m_max, n_max)
 
@@ -110,7 +117,13 @@ def plot_square_coil(m_max, n_max, spacing, R):
 
 
 def plot_piecewise_linear_coil(coords_max, spacing, R):
-    """"""
+    """
+    Draws a piecewise linear coil
+    ---------------
+    @param coords_max: Coordinates of the largest turn
+    @param spacing: Spacing between coil and the calculation domain boundary
+    @param R: Set of radii
+    """
     fig = plt.figure(figsize=(5, 5), dpi=100)
     ax = fig.subplots()
     l = []
@@ -122,7 +135,7 @@ def plot_piecewise_linear_coil(coords_max, spacing, R):
     ax.set_xlim((-r_max, r_max))
     ax.set_ylim((-r_max, r_max))
 
-    list_of_coords = R_in_coords(R, coords_max)
+    list_of_coords = Radii_in_coords(R, coords_max)
 
     for coords in list_of_coords:
         for i in range(len(coords)):
@@ -130,5 +143,8 @@ def plot_piecewise_linear_coil(coords_max, spacing, R):
                 plt.plot([coords[i][0], coords[i + 1][0]], [coords[i][1], coords[i + 1][1]], color='#000000')
             except IndexError:
                 plt.plot([coords[0][0], coords[i][0]], [coords[0][1], coords[i][1]], color='#000000')
+
+        plt.xlabel('x [m]')
+        plt.ylabel('y [m]')
 
     plt.show()

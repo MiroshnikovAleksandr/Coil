@@ -50,6 +50,12 @@ def resistance_contour(l, material, d, nu):
 
 
 def length_circular_coils(coils):
+    """
+    Calculates the length of each sequentially connected turn in a circular contour
+    ---------------
+    @param coils: Multidimensional array with the radii of the turns
+    @return l: Array with lengths of sequentially connected turns
+    """
     l = []
     for coil in coils:
         l.append(2 * np.pi * np.sum(coil))
@@ -57,6 +63,12 @@ def length_circular_coils(coils):
 
 
 def length_square_coils(coils):
+    """
+    Calculates the length of each sequentially connected turn in a rectangular contour
+    ---------------
+    @param coils: Multidimensional array with the lengths of the sides of the turns
+    @return l: Array with lengths of sequentially connected turns
+    """
     l = []
     for coil in coils:
         lenght_coil = 0
@@ -67,6 +79,12 @@ def length_square_coils(coils):
 
 
 def length_piecewise_linear_coils(coils):
+    """
+    Calculates the length of each sequentially connected turn in a piecewise linear contour
+    ---------------
+    @param coils: Multidimensional array with the coordinates of the turns
+    @return l: Array with lengths of sequentially connected turns
+    """
     l = []
     for coil in coils:
         lenght_coil = 0

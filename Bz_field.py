@@ -4,6 +4,11 @@ from scipy.special import ellipk,ellipkm1, ellipe
 
 
 def prop_coeff(R):
+    """
+    Calculates the radius reduction factor
+    ---------------
+    """
+    R.sort()
     prop = []
     for i in range(len(R)-1):
         prop.append(R[i]/R[i+1])
@@ -11,8 +16,11 @@ def prop_coeff(R):
     return prop
 
 
-def R_in_sides_square(R, X_side, Y_side):
-    """"""
+def Radii_in_sides_square(R, X_side, Y_side):
+    """
+    Converts radii to sides of a rectangular coil
+    ---------------
+    """
     prop = prop_coeff(R)
     X_sides, Y_sides = [X_side], [Y_side]
     for k in prop:
@@ -22,8 +30,11 @@ def R_in_sides_square(R, X_side, Y_side):
     return X_sides, Y_sides
 
 
-def R_in_coords(R, coords_max):
-    """"""
+def Radii_in_coords(R, coords_max):
+    """
+    Converts radii to vertex coordinates of a piecewise linear coil
+    ---------------
+    """
     prop = prop_coeff(R)
     list_of_coords = [coords_max]
     for k in prop:
@@ -42,7 +53,7 @@ def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
     @param x2, y2: The end of the segment
     @param g: Length of the largest segment
     @param I: Current in the contour
-    @param spacing: Spacing between segment and the calculation domain boundary
+    @param spacing: Spacing between coil and the calculation domain boundary
     @param cp: Calculation domain points
     @return: Z-component of B field of single-segment
     """
@@ -89,11 +100,11 @@ def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
 
 def Bz_piecewise_linear_contour_single(coords,  I, spacing, cp, direction):
     """
-    Calculates Bz field of arbitrary contour
+    Calculates Bz field of piecewise linear coil
     ---------------
     @param coords: Coordinates of the contour corners
     @param I: Current in the contour
-    @param spacing: Spacing between segment and the calculation domain boundary
+    @param spacing: Spacing between coil and the calculation domain boundary
     @param cp: Calculation domain points
     @param direction: The direction of the current along the contour. If the current flows clockwise, then by default this value is True
     @return: Z-component B of the field of single coil
@@ -121,8 +132,16 @@ def Bz_piecewise_linear_contour_single(coords,  I, spacing, cp, direction):
 def Bz_piecewise_linear_contour(R, coords,  I, spacing, cp, direction=True):
     """
     Calculates the Bz field for a piecewise linear contour
+    ---------------
+    @param R: Set of radii
+    @param coords: Coordinates of the largest turn
+    @param I: Current in the contour
+    @param spacing: Spacing between coil and the calculation domain boundary
+    @param cp: Calculation domain points
+    @param direction: The direction of the current along the contour. If the current flows clockwise, then by default this value is True
+    @return: Z-component B of the field of a piecewise linear contour
     """
-    list_of_coords = R_in_coords(R, coords)
+    list_of_coords = Radii_in_coords(R, coords)
 
     Bz_piecewise_linear_contour = np.zeros([cp, cp, cp])
 
@@ -136,24 +155,16 @@ def Bz_circular_single(a, I, spacing, cp):
     """
     Calculates the Bz field of a single circular coil
     ---------------
-    Parameters
-    ----------
-    a :
-        Turn radius [m]
-    I :
-        Current [A]
-    spacing :
-        Spacing between coil and the calculation domain boundary
-    cp :
-        Calculation domain points
-
+    @param a: Turn radius
+    @param I: Current in the contour
+    @param spacing: Spacing between coil and the calculation domain boundary
+    @param cp: Calculation domain points
+    @return: Z-component B of the field of a single circular coil
     """
     mu0 = np.pi * 4e-7
     calc_radius = a * spacing  # Calculation domain length
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)  # Creating meshgrid
-
-    Bz = np.zeros((cp, cp, cp))  # Preallocation
 
     ro = np.sqrt(xv ** 2 + yv ** 2)
     r = np.sqrt(xv ** 2 + yv ** 2 + zv ** 2)
@@ -170,6 +181,7 @@ def Bz_circular_single(a, I, spacing, cp):
 def Bz_circular_contour(R, I, spacing, cp):
     """
     Calculates the Bz field for a circular contour
+    ---------------
     """
     Bz_circular_contour = np.zeros([cp, cp, cp])
 
@@ -187,7 +199,7 @@ def Bz_square_single(m, n, I, spacing, cp):
     @param m: Side parallel to the x-axis
     @param n: Side parallel to the y-axis
     @param I: Current in the contour
-    @param spacing: Spacing between segment and the calculation domain boundary
+    @param spacing: Spacing between coil and the calculation domain boundary
     @param cp: Calculation domain points
     @return: Z-component B of the field of single coil
     """
@@ -224,7 +236,7 @@ def Bz_square_contour(R, X_side, Y_side, I, spacing, cp):
     Calculates the Bz field for a square contour
     ---------------
     """
-    X_sides, Y_sides = R_in_sides_square(R, X_side, Y_side)
+    X_sides, Y_sides = Radii_in_sides_square(R, X_side, Y_side)
 
     Bz_square_contour = np.zeros([cp, cp, cp])
 
