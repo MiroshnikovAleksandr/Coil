@@ -9,11 +9,22 @@ import pandas as pd
 import numpy as np
 import Field_functions as ff
 import tomli
+# from scoop import futures
+# import multiprocessing
+
+seed = 4090899410329119572
+#np.random.Random(seed)
+random.seed(seed)
 
 with open('parameters.toml', 'rb') as toml:
     parameters = tomli.load(toml)
 
 toolbox = base.Toolbox()  # create toolbox for genetic algorithm
+
+# toolbox.register("map", futures.map)
+# pool = multiprocessing.Pool()
+# toolbox.register("map", pool.map)
+
 creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMin)
 
@@ -22,11 +33,12 @@ class Genetic:
     """
     This class describes the genetic algorithm.
     """
+
     def __init__(self, params):
         self.hall_of_fame = None
         self.logbook = None
         self.pop = None
-        self.no_of_generations = params['gen']['no_of_generations']
+        self.no_of_generations = 1  # params['gen']['no_of_generations']
         self.len_of_turn = params['gen']['length_of_turn']
         self.population_size = params['gen']['population_size']
         self.probability_of_mutation = params['gen']['probability_of_mutation']
@@ -50,7 +62,7 @@ class Genetic:
         """
         toolbox.register("ZeroOrOne", random.randint, 0, 1)
         toolbox.register("individual", tools.initRepeat, creator.Individual,
-                         toolbox.ZeroOrOne, random.randint(50, 1000))
+                         toolbox.ZeroOrOne, random.randint(250, 5000)//5)
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
         self.pop = toolbox.population(n=self.population_size)
@@ -60,7 +72,7 @@ class Genetic:
         Calculates boundaries of coil turn placement based on the diameter of the wire;
         sorts the turns of an individual (coil) in descending order.
         @param ind: creator.Individual
-        @return: list
+        @return: list, containing the sorted individual and the boundaries
         """
         ind = [0] * (self.len_of_turn - (len(ind) % self.len_of_turn)) + ind
 
@@ -96,7 +108,7 @@ class Genetic:
         """
         Decodes the individual from 1-0 code to a sequence of radiuses of turns of the coil.
         @param individual: creator.Individual
-        @return: list
+        @return: list of radiuses
         """
         len_chromosome_one_var = self.len_of_turn
         bound_index = 0
@@ -126,7 +138,7 @@ class Genetic:
         This is the objective function of the genetic algorithm. It returns the coefficient of variation
         of the magnetic field induced by the coil.
         @param individual: creator.Individual
-        @return: list
+        @return: list, containing the COV
         """
         r_i = self.decode_all_x(individual)
         Bz = ff.Bz(self.a_max, self.a_min, len(r_i), self.I, self.spacing, self.cp, r_i)
@@ -176,7 +188,7 @@ class Genetic:
         """
         Executes the genetic algorithm with selection, mating and mutation.
         Also stores the best individual from the perspective of its objective function in @hall_of_fame@.
-        @return: list
+        @return: list, containing the COV of the best individual
         """
         # registering objective function with constraint
         toolbox.register("evaluate", self.objective_fxn)  # privide the objective function here
@@ -226,14 +238,19 @@ class Genetic:
         print(self.objective_fxn(self.hall_of_fame[0])[0])
 
         print(f'Total length = {self.length(self.hall_of_fame[0])} m.')
-        #plt.show()
+        # plt.show()
 
         # df = pd.DataFrame(self.decode_all_x(hall_of_fame[0]))
         # df.to_excel('hall_of_fame.xlsx')
 
-
-if __name__ == '__main__':
-    GA = Genetic(parameters)
-    GA.preparation()
-    GA.execution()
-    GA.show()
+GA = Genetic(parameters)
+GA.preparation()
+GA.execution()
+GA.show()
+# for i in range(50, 101, 10):
+#     no_of_generations = i
+#     GA = Genetic(parameters)
+#     GA.preparation()
+#     GA.execution()
+#     GA.show()
+# plt.show()

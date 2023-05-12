@@ -6,7 +6,7 @@ import scienceplots
 
 n = 2  # number of points in each data array
 
-plt.style.use(['science', 'ieee', 'no-latex'])
+# plt.style.use(['science', 'ieee', 'no-latex'])
 
 with open('parameters.toml', 'rb') as toml:
     parameters = tomli.load(toml)

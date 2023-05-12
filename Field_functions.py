@@ -68,7 +68,8 @@ def COV_circ(Bz,max_coil_r,height,spacing):
     COV = B_std/B_mean
     return COV
 
-def Bz(a_max,a_min,n,I,spacing,cp,r_i):
+
+def Bz(a_max, a_min, n, I, spacing, cp, r_i):
     """
     Calculate Bz field of circular multiturn coil
     
@@ -101,7 +102,7 @@ def Bz(a_max,a_min,n,I,spacing,cp,r_i):
     r       = np.sqrt(xv**2+yv**2+zv**2)
     C       = mu0*I/np.pi
     
-    for i,radius in enumerate(r_i):
+    for i, radius in enumerate(r_i):
         alpha   = np.sqrt(radius**2+r**2-2*radius*ro)
         beta    = np.sqrt(radius**2+r**2+2*radius*ro)
         k       = np.sqrt(1-alpha**2/beta**2)
@@ -388,7 +389,6 @@ def Bz_square(m_max,n_max,n,I,spacing,cp,m_i,n_i):
                 Bz_square_sum = Bz_square_sum + Bz_square_i
               
     return Bz_square_sum
-
 
 
 def plot_2d(Bz,height,a_max,spacing,cp):
