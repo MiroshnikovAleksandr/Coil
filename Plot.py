@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from Bz_field import Radii_in_coords, Radii_in_sides_square
+from Bz_Field import Radii_in_coords, Radii_in_sides_square
 
 
 def plot_2d(Bz, height, a_max, spacing, cp):

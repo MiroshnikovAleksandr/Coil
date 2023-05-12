@@ -92,6 +92,18 @@ def mask_piecewise_linear(tiles, coords):
                 for x in X:
                     tiles[y][x] = 1
             else:
+                if len(X) > len(Y):
+                    Y.clear()
+                    k = (y2-y1)/(x2-x1)
+                    b = y1 - k*x1
+                    for x in X:
+                        Y.append(round(k*x+b))
+                elif len(Y) > len(X):
+                    X.clear()
+                    k = (y2 - y1) / (x2 - x1)
+                    b = y1 - k * x1
+                    for y in Y:
+                        X.append(round((y-b)/k))
                 for x, y in zip(X, Y):
                     tiles[y][x] = 1
             X.clear()
@@ -122,6 +134,18 @@ def mask_piecewise_linear(tiles, coords):
                 for x in X:
                     tiles[y][x] = 1
             else:
+                if len(X) > len(Y):
+                    Y.clear()
+                    k = (y2-y1)/(x2-x1)
+                    b = y1 - k*x1
+                    for x in X:
+                        Y.append(round(k*x+b))
+                elif len(Y) > len(X):
+                    X.clear()
+                    k = (y2 - y1) / (x2 - x1)
+                    b = y1 - k * x1
+                    for y in Y:
+                        X.append(round((y-b)/k))
                 for x, y in zip(X, Y):
                     tiles[y][x] = 1
             X.clear()
