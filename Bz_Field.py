@@ -98,7 +98,7 @@ def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
     return Bz_segment
 
 
-def Bz_piecewise_linear_contour_single(coords,  I, spacing, cp, direction):
+def Bz_piecewise_linear_contour_single(coords,  I, spacing, cp, g, direction):
     """
     Calculates Bz field of piecewise linear coil
     ---------------
@@ -112,11 +112,6 @@ def Bz_piecewise_linear_contour_single(coords,  I, spacing, cp, direction):
     if not direction:
         I = -I
 
-    l = []
-    for i in range(len(coords)):
-        l.append(np.sqrt((coords[i][0])**2 + (coords[i][1])**2))
-
-    g = np.amax(l)
     I = np.sqrt(2)*I
 
     Bz_piecewise_linear_contour_single = np.zeros((cp, cp, cp))
@@ -143,10 +138,16 @@ def Bz_piecewise_linear_contour(R, coords,  I, spacing, cp, direction=True):
     """
     list_of_coords = Radii_in_coords(R, coords)
 
+    l = []
+    for i in range(len(coords)):
+        l.append(np.sqrt((coords[i][0]) ** 2 + (coords[i][1]) ** 2))
+
+    g = np.amax(l)
+
     Bz_piecewise_linear_contour = np.zeros([cp, cp, cp])
 
     for coil in list_of_coords:
-        Bz_piecewise_linear_contour += Bz_piecewise_linear_contour_single(coil, I, spacing, cp, direction)
+        Bz_piecewise_linear_contour += Bz_piecewise_linear_contour_single(coil, I, spacing, cp, g, direction)
 
     return Bz_piecewise_linear_contour
 
@@ -192,7 +193,7 @@ def Bz_circular_contour(R, I, spacing, cp):
     return Bz_circular_contour
 
 
-def Bz_square_single(m, n, I, spacing, cp):
+def Bz_square_single(m, n, I, spacing, cp, max_side):
     """
     Calculates the Bz field of a single square coil
     ---------------
@@ -204,7 +205,7 @@ def Bz_square_single(m, n, I, spacing, cp):
     @return: Z-component B of the field of single coil
     """
     mu0 = np.pi * 4e-7
-    calc_radius = np.amax([m, n]) * spacing  # Calculation domain length
+    calc_radius = max_side * spacing  # Calculation domain length
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)  # Creating meshgrid
 
@@ -236,11 +237,12 @@ def Bz_square_contour(R, X_side, Y_side, I, spacing, cp):
     Calculates the Bz field for a square contour
     ---------------
     """
+    max_side = max([X_side, Y_side])
     X_sides, Y_sides = Radii_in_sides_square(R, X_side, Y_side)
 
     Bz_square_contour = np.zeros([cp, cp, cp])
 
     for x, y in zip(X_sides, Y_sides):
-        Bz_square_contour += Bz_square_single(x, y, I, spacing, cp)
+        Bz_square_contour += Bz_square_single(x, y, I, spacing, cp, max_side)
 
     return Bz_square_contour

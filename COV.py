@@ -215,7 +215,7 @@ def COV_circle(Bz, max_coil_r, height, spacing, P):
     tiles = np.zeros([cp, cp])
     r_cov_m = max_coil_r * P  # Uniform area
     r_cov = r_cov_m / cell_size  # Uniform area in cells
-    mask_circular(tiles, cx, cy, round(r_cov))
+    mask_circle(tiles, cx, cy, round(r_cov))
     Bz_masked = np.multiply(Bz[:, :, view_line], tiles)
     B_mean = np.sum(Bz_masked) / np.sum(tiles)
     B_std = np.sqrt(np.sum((Bz_masked - np.multiply(B_mean, tiles)) ** 2) / np.sum(tiles))
