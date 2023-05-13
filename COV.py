@@ -191,9 +191,6 @@ def mask_piecewise_linear(tiles, coords):
             elif cut[index_y] == 0 and cut[index_y + 1] == 1 and cut[index_y + 2] == 0 and ([x, index_y+1] not in coords):
                 tiles[index_y+1][x] = 0
 
-    print('...')
-
-
 def COV_circle(Bz, max_coil_r, height, spacing, P):
     """
     Calculates the coefficient of variation for a circular coil

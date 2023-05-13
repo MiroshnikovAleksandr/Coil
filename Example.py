@@ -8,9 +8,9 @@ import COV
 
 R = [0.5, 0.6]
 # coords = [[-3, -4], [-3, -3], [-4, -3], [-4, 3], [-3, 3], [-3, 4], [3, 4], [3, 3], [4, 3], [4, -3], [3, -3], [3, -4]]
-# coords = [[-0.5, -np.sqrt(3)/2], [-1, 0], [-0.5, np.sqrt(3)/2], [0.5, np.sqrt(3)/2], [1, 0], [0.5, -np.sqrt(3)/2]]
+coords = [[-0.5, -np.sqrt(3)/2], [-1, 0], [-0.5, np.sqrt(3)/2], [0.5, np.sqrt(3)/2], [1, 0], [0.5, -np.sqrt(3)/2]]
 # coords = [[-0.5, -np.sqrt(3)/6], [0, np.sqrt(3)/3], [0.5, -np.sqrt(3)/6]]
-coords = [[0, -np.sqrt(3)/2], [-0.5, 0], [0, np.sqrt(3)/2], [0.5, 0]]
+# coords = [[0, -np.sqrt(3)/2], [-0.5, 0], [0, np.sqrt(3)/2], [0.5, 0]]
 # coords = [[0.05, -0.05], [-0.05, -0.05], [-0.05, 0.05], [0.05, 0.05]]
 # coords = [[-1, 7], [-1, 0], [-3, 0], [-3, -3], [0, -3], [0, -2], [1, -2], [1, -3], [4, -3], [4, 0], [2, 0], [2, 7]]
 # coords = [[-1, 7], [-1, 0], [-3, 0], [-3, -3], [4, -3], [4, 0], [2, 0], [2, 7]]
@@ -32,7 +32,7 @@ Bz = Bz_Field.Bz_piecewise_linear_contour_single(coords, I, spacing, cp, False)
 #     coords[i][0] = round(coords[i][0]*10 + 15)
 #     coords[i][1] = round(coords[i][1]*10 + 15)
 # tiles = np.zeros([30, 30])
-COV = COV.COV_piecewise_linear(Bz, coords, height, spacing, P)
+# COV = COV.COV_piecewise_linear(Bz, coords, height, spacing, P)
 # print(COV)
 # COV.mask_piecewise_linear(tiles, coords)
 Plot.plot_2d(Bz, height, g, spacing, cp)

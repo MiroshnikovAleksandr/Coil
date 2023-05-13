@@ -65,7 +65,7 @@ def plot_coil(a_max, spacing, R):
     """
     Draws a circular coil
     ---------------
-    @param R: Radius of the largest turn
+    @param a_max: Radius of the largest turn
     @param spacing: Spacing between coil and the calculation domain boundary
     @param R: Set of radii
     """
