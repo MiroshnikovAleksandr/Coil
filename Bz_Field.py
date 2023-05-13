@@ -151,7 +151,7 @@ def Bz_piecewise_linear_contour(R, coords,  I, spacing, cp, direction=True):
     return Bz_piecewise_linear_contour
 
 
-def Bz_circular_single(a, I, spacing, cp):
+def Bz_circular_single(r_max, a, I, spacing, cp):
     """
     Calculates the Bz field of a single circular coil
     ---------------
@@ -186,7 +186,7 @@ def Bz_circular_contour(R, I, spacing, cp):
     Bz_circular_contour = np.zeros([cp, cp, cp])
 
     for r in R:
-        Bz_circular_contour += Bz_circular_single(r, I, spacing, cp)
+        Bz_circular_contour += Bz_circular_single(max(R), r, I, spacing, cp)
 
 
     return Bz_circular_contour

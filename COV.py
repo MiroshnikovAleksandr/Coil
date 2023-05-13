@@ -182,8 +182,17 @@ def mask_piecewise_linear(tiles, coords):
         indexes_vertexes.clear()
         indexes_rib.clear()
 
+    for x in range(len(tiles-1)):
+        cut = tiles[:, x]
 
-    print('///')
+        for index_y in range(len(cut)-2):
+            if cut[index_y] == 1 and cut[index_y + 1] == 0 and cut[index_y + 2] == 1:
+                tiles[index_y+1][x] = 1
+            elif cut[index_y] == 0 and cut[index_y + 1] == 1 and cut[index_y + 2] == 0 and ([x, index_y+1] not in coords):
+                tiles[index_y+1][x] = 0
+
+    print('...')
+
 
 def COV_circle(Bz, max_coil_r, height, spacing, P):
     """
