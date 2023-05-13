@@ -162,7 +162,7 @@ def Bz_circular_single(r_max, a, I, spacing, cp):
     @return: Z-component B of the field of a single circular coil
     """
     mu0 = np.pi * 4e-7
-    calc_radius = a * spacing  # Calculation domain length
+    calc_radius = r_max * spacing  # Calculation domain length
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)  # Creating meshgrid
 

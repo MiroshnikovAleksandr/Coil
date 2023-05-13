@@ -7,14 +7,15 @@ import math
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import Field_functions as ff
+import Bz_Field as Bz
+import COV
 import tomli
+
 # from scoop import futures
 # import multiprocessing
 
-seed = 4090899410329119572
-#np.random.Random(seed)
-random.seed(seed)
+# seed = 4090899410329119572
+# random.seed(seed)
 
 with open('parameters.toml', 'rb') as toml:
     parameters = tomli.load(toml)
@@ -38,7 +39,7 @@ class Genetic:
         self.hall_of_fame = None
         self.logbook = None
         self.pop = None
-        self.no_of_generations = 1  # params['gen']['no_of_generations']
+        self.no_of_generations = params['gen']['no_of_generations']
         self.len_of_turn = params['gen']['length_of_turn']
         self.population_size = params['gen']['population_size']
         self.probability_of_mutation = params['gen']['probability_of_mutation']
@@ -51,6 +52,14 @@ class Genetic:
         self.spacing = params['geom']['spacing']
         self.cp = params['geom']['cp']
         self.minimal_gap = params['geom']['minimal_gap']
+        self.figure = params['geom']['figure']
+        self.height = params['geom']['height']
+        self.X_side = params['geom']['X_side']
+        self.Y_side = params['geom']['Y_side']
+        self.coords = params['geom']['coords']
+        self.calculation_area = params['geom']['calculation_area']
+        self.material = params['geom']['material']
+        self.freq = params['geom']['freq']
 
     def preparation(self):
         """
@@ -62,7 +71,7 @@ class Genetic:
         """
         toolbox.register("ZeroOrOne", random.randint, 0, 1)
         toolbox.register("individual", tools.initRepeat, creator.Individual,
-                         toolbox.ZeroOrOne, random.randint(250, 5000)//5)
+                         toolbox.ZeroOrOne, random.randint(50, 1000))
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
         self.pop = toolbox.population(n=self.population_size)
@@ -133,6 +142,47 @@ class Genetic:
 
         return x
 
+    def determine_Bz(self, individual):
+        if self.figure == 'Circular':
+            return Bz.Bz_circular_contour(R=self.decode_all_x(individual),
+                                          I=self.I,
+                                          spacing=self.spacing,
+                                          cp=self.cp)
+        elif self.figure == 'Rectangle':
+            return Bz.Bz_square_contour(R=self.decode_all_x(individual),
+                                        X_side=self.X_side,
+                                        Y_side=self.Y_side,
+                                        I=self.I,
+                                        spacing=self.spacing,
+                                        cp=self.cp)
+        elif self.figure == 'Piecewise':
+            return Bz.Bz_piecewise_linear_contour(R=self.decode_all_x(individual),
+                                                  coords=self.coords,
+                                                  I=self.I,
+                                                  spacing=self.spacing,
+                                                  cp=self.cp)
+
+    def determine_COV(self, bz):
+        if self.figure == 'Circular':
+            return COV.COV_circle(Bz=bz,
+                                  max_coil_r=self.a_max,
+                                  height=self.height,
+                                  spacing=self.spacing,
+                                  P=self.calculation_area)
+        elif self.figure == 'Rectangle':
+            return COV.COV_square(Bz=bz,
+                                  X_side=self.X_side,
+                                  Y_side=self.Y_side,
+                                  height=self.height,
+                                  spacing=self.spacing,
+                                  P=self.calculation_area)
+        elif self.figure == 'Piecewise':
+            return COV.COV_piecewise_linear(Bz=bz,
+                                            coords=self.coords,
+                                            height=self.height,
+                                            spacing=self.spacing,
+                                            P=self.calculation_area)
+
     def objective_fxn(self, individual):
         """
         This is the objective function of the genetic algorithm. It returns the coefficient of variation
@@ -140,13 +190,10 @@ class Genetic:
         @param individual: creator.Individual
         @return: list, containing the COV
         """
-        r_i = self.decode_all_x(individual)
-        Bz = ff.Bz(self.a_max, self.a_min, len(r_i), self.I, self.spacing, self.cp, r_i)
+        bz = self.determine_Bz(individual)
+        cov = self.determine_COV(bz)
 
-        height = 0.015  # [m]
-        COV = ff.COV_circ(Bz, self.a_max, height, self.spacing)
-
-        obj_function_value = COV
+        obj_function_value = cov
         return [obj_function_value]
 
     def mutate(self, ind, Indpb):
@@ -218,7 +265,7 @@ class Genetic:
 
         self.hall_of_fame = tools.HallOfFame(1)
         self.hall_of_fame.update(self.pop)
-        return self.objective_fxn(self.hall_of_fame[0])
+        return self.decode_all_x(self.hall_of_fame[0])
 
     def show(self):
         """
@@ -242,6 +289,7 @@ class Genetic:
 
         # df = pd.DataFrame(self.decode_all_x(hall_of_fame[0]))
         # df.to_excel('hall_of_fame.xlsx')
+
 
 GA = Genetic(parameters)
 GA.preparation()
