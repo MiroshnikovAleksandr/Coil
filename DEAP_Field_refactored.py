@@ -36,6 +36,8 @@ class Genetic:
     """
 
     def __init__(self, params):
+        self.COV = None
+        self.radii = None
         self.hall_of_fame = None
         self.logbook = None
         self.pop = None
@@ -272,29 +274,14 @@ class Genetic:
         Displays the results (statistics plot, best COV, total length of the best individual).
         @return:
         """
-        # using select method in logbook object to extract the argument/key as list
-        plt.plot(self.logbook.select('Min'))
-
-        plt.title("Minimum values of f(x,y) Reached Through Generations", fontsize=20, fontweight='bold')
-        plt.xlabel("Generations", fontsize=18, fontweight='bold')
-        plt.ylabel("Value of Himmelblau's Function", fontsize=18, fontweight='bold')
-        plt.xticks(fontweight='bold')
-        plt.yticks(fontweight='bold')
-
-        print(self.decode_all_x(self.hall_of_fame[0]))
-        print(self.objective_fxn(self.hall_of_fame[0])[0])
-
-        print(f'Total length = {self.length(self.hall_of_fame[0])} m.')
-        # plt.show()
-
-        # df = pd.DataFrame(self.decode_all_x(hall_of_fame[0]))
-        # df.to_excel('hall_of_fame.xlsx')
+        self.radii = self.decode_all_x(self.hall_of_fame[0])
+        self.COV = self.objective_fxn(self.hall_of_fame[0])[0]
 
 
-GA = Genetic(parameters)
-GA.preparation()
-GA.execution()
-GA.show()
+# GA = Genetic(parameters)
+# GA.preparation()
+# GA.execution()
+# GA.show()
 # for i in range(50, 101, 10):
 #     no_of_generations = i
 #     GA = Genetic(parameters)

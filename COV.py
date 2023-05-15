@@ -16,10 +16,10 @@ def dist(x1, y1, x2, y2):
 
 def if_one(cut, S=0):
     for j in range(len(cut) - 1):
-        if cut[j] == 1 and cut[j+1] == 1:
+        if cut[j] == 1 and cut[j + 1] == 1:
             S += 1
-            return if_one(cut[j + 1 : len(cut)], S)
-        elif cut[j] == 1 and cut[j+1] != 1:
+            return if_one(cut[j + 1: len(cut)], S)
+        elif cut[j] == 1 and cut[j + 1] != 1:
             return S
 
 
@@ -43,6 +43,7 @@ def mask_circular(tiles, cx, cy, r):
             if dist(cx, cy, x, y) <= r:
                 tiles[x][y] = 1
 
+
 def mask_square(tiles, cx, cy, X_side, Y_side):
     """
     Creates a square binary mask
@@ -53,9 +54,10 @@ def mask_square(tiles, cx, cy, X_side, Y_side):
     @param min_side: The smallest side of the calculation domain is in points
     @return: A square binary mask
     """
-    for x in range(cx-X_side, cx+X_side):
-        for y in range(cy-Y_side, cy+Y_side):
+    for x in range(cx - X_side, cx + X_side):
+        for y in range(cy - Y_side, cy + Y_side):
             tiles[x][y] = 1
+
 
 def mask_piecewise_linear(tiles, coords):
     """
@@ -94,16 +96,16 @@ def mask_piecewise_linear(tiles, coords):
             else:
                 if len(X) > len(Y):
                     Y.clear()
-                    k = (y2-y1)/(x2-x1)
-                    b = y1 - k*x1
+                    k = (y2 - y1) / (x2 - x1)
+                    b = y1 - k * x1
                     for x in X:
-                        Y.append(round(k*x+b))
+                        Y.append(round(k * x + b))
                 elif len(Y) > len(X):
                     X.clear()
                     k = (y2 - y1) / (x2 - x1)
                     b = y1 - k * x1
                     for y in Y:
-                        X.append(round((y-b)/k))
+                        X.append(round((y - b) / k))
                 for x, y in zip(X, Y):
                     tiles[y][x] = 1
             X.clear()
@@ -136,16 +138,16 @@ def mask_piecewise_linear(tiles, coords):
             else:
                 if len(X) > len(Y):
                     Y.clear()
-                    k = (y2-y1)/(x2-x1)
-                    b = y1 - k*x1
+                    k = (y2 - y1) / (x2 - x1)
+                    b = y1 - k * x1
                     for x in X:
-                        Y.append(round(k*x+b))
+                        Y.append(round(k * x + b))
                 elif len(Y) > len(X):
                     X.clear()
                     k = (y2 - y1) / (x2 - x1)
                     b = y1 - k * x1
                     for y in Y:
-                        X.append(round((y-b)/k))
+                        X.append(round((y - b) / k))
                 for x, y in zip(X, Y):
                     tiles[y][x] = 1
             X.clear()
@@ -157,15 +159,17 @@ def mask_piecewise_linear(tiles, coords):
         for x in range(len(cut) - 1):
             if cut[x] == 1:
                 indexes_contour.append(x)
-                if ([x, y] in coords) and (cut[x+1] != 1) and(cut[x-1] != 1):
+                if ([x, y] in coords) and (cut[x + 1] != 1) and (cut[x - 1] != 1):
                     index = index_of_element(coords, [x, y])
                     if (index < len(coords) - 1) and (index > 0):
-                        if ((y < coords[index + 1][1]) and (y < coords[index - 1][1])) or ((y > coords[index + 1][1]) and (y > coords[index - 1][1])):
+                        if ((y < coords[index + 1][1]) and (y < coords[index - 1][1])) or (
+                                (y > coords[index + 1][1]) and (y > coords[index - 1][1])):
                             indexes_vertexes.append(x)
                     else:
-                        if ((y < coords[0][1]) and (y < coords[len(coords) - 1][1])) or ((y > coords[0][1]) and (y > coords[len(coords) - 1][1])):
+                        if ((y < coords[0][1]) and (y < coords[len(coords) - 1][1])) or (
+                                (y > coords[0][1]) and (y > coords[len(coords) - 1][1])):
                             indexes_vertexes.append(x)
-                elif ([x, y] in coords) and (cut[x+1] == 1):
+                elif ([x, y] in coords) and (cut[x + 1] == 1):
                     cut_copy = copy.deepcopy(cut)
                     last_one = x + 1 + if_one(cut_copy[x + 1:])
                     for i in range(x, last_one):
@@ -182,14 +186,16 @@ def mask_piecewise_linear(tiles, coords):
         indexes_vertexes.clear()
         indexes_rib.clear()
 
-    for x in range(len(tiles-1)):
+    for x in range(len(tiles - 1)):
         cut = tiles[:, x]
 
-        for index_y in range(len(cut)-2):
+        for index_y in range(len(cut) - 2):
             if cut[index_y] == 1 and cut[index_y + 1] == 0 and cut[index_y + 2] == 1:
-                tiles[index_y+1][x] = 1
-            elif cut[index_y] == 0 and cut[index_y + 1] == 1 and cut[index_y + 2] == 0 and ([x, index_y+1] not in coords):
-                tiles[index_y+1][x] = 0
+                tiles[index_y + 1][x] = 1
+            elif cut[index_y] == 0 and cut[index_y + 1] == 1 and cut[index_y + 2] == 0 and (
+                    [x, index_y + 1] not in coords):
+                tiles[index_y + 1][x] = 0
+
 
 def COV_circle(Bz, max_coil_r, height, spacing, P):
     """
@@ -205,13 +211,13 @@ def COV_circle(Bz, max_coil_r, height, spacing, P):
     calc_radius = max_coil_r * spacing  # Calculation domain length
 
     view_line = height / (2 * calc_radius / len(Bz)) + len(Bz) / 2
-    view_plane  =len(Bz)/2 * (height / calc_radius + 1)
+    view_plane = len(Bz) / 2 * (height / calc_radius + 1)
     view_line = int(view_line)
 
     cp = len(Bz)  # Calculation domain
     cx = cp // 2  # center of calc area
     cy = cp // 2
-    cell_size = 2*calc_radius / cp
+    cell_size = 2 * calc_radius / cp
     tiles = np.zeros([cp, cp])
     r_cov_m = max_coil_r * P  # Uniform area
     r_cov = r_cov_m / cell_size  # Uniform area in cells
@@ -240,8 +246,8 @@ def COV_square(Bz, X_side, Y_side, height, spacing, P):
     cy = cp // 2
 
     calc_radius = max([X_side, Y_side]) * spacing
-    cell_size = 2*calc_radius / (cp+1)
-    view_plane = round(height/cell_size) + 1 + round(cp / 2)
+    cell_size = 2 * calc_radius / (cp + 1)
+    view_plane = round(height / cell_size) + 1 + round(cp / 2)
     tiles = np.zeros((0, 0))
 
     X_side_COV = X_side * P / cell_size
@@ -252,11 +258,12 @@ def COV_square(Bz, X_side, Y_side, height, spacing, P):
     Bz_masked = np.multiply(Bz[:, :, view_plane], tiles)
 
     Bz_mean = np.sum(Bz_masked) / np.sum(tiles)
-    Bz_std = np.sqrt(np.sum((np.multiply(Bz_mean, tiles) - Bz_masked)**2) / (np.sum(tiles)))
+    Bz_std = np.sqrt(np.sum((np.multiply(Bz_mean, tiles) - Bz_masked) ** 2) / (np.sum(tiles)))
 
     COV = Bz_std / Bz_mean
 
     return COV
+
 
 def COV_piecewise_linear(Bz, coords, height, spacing, P):
     """
@@ -275,7 +282,7 @@ def COV_piecewise_linear(Bz, coords, height, spacing, P):
 
     l = []
     for i in range(len(coords)):
-        l.append(np.sqrt((coords[i][0])**2 + (coords[i][1])**2))
+        l.append(np.sqrt((coords[i][0]) ** 2 + (coords[i][1]) ** 2))
 
     calc_radius = max(l) * spacing
     cell_size = 2 * calc_radius / cp
@@ -288,7 +295,7 @@ def COV_piecewise_linear(Bz, coords, height, spacing, P):
 
     mask_piecewise_linear(tiles, coords_COV)
     Bz_masked = np.multiply(tiles, Bz[:, :, view_plane])
-    Bz_mean  = np.sum(Bz_masked) / np.sum(tiles)
-    Bz_std = np.sqrt((np.sum((Bz_masked  -np.multiply(Bz_mean, tiles))**2)) / (np.sum(tiles)))
+    Bz_mean = np.sum(Bz_masked) / np.sum(tiles)
+    Bz_std = np.sqrt((np.sum((Bz_masked - np.multiply(Bz_mean, tiles)) ** 2)) / (np.sum(tiles)))
     COV = Bz_std / Bz_mean
     return COV

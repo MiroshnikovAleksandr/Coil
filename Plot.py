@@ -18,7 +18,7 @@ def plot_2d(Bz, height, a_max, spacing, cp):
     plt.ylabel('Bz [uT]')
     plt.title('Bz Field at {} mm height'.format(height * 1e3))
 
-    plt.show()
+    return fig
 
 
 def plot_3d(Bz, height, a_max, spacing, cp):
@@ -37,6 +37,8 @@ def plot_3d(Bz, height, a_max, spacing, cp):
     ax.set_title('Bz Field at {} mm height'.format(height * 1e3))
     plt.xlabel('x [cm]')
     plt.ylabel('y [cm]')
+
+    return fig
 
 
 def plot_vector(Bz, height, a_max, spacing, cp):
@@ -83,7 +85,7 @@ def plot_coil(a_max, spacing, R):
         plt.xlabel('x [m]')
         plt.ylabel('y [m]')
 
-    plt.show()
+    return fig
 
 
 def plot_square_coil(m_max, n_max, spacing, R):
@@ -113,7 +115,7 @@ def plot_square_coil(m_max, n_max, spacing, R):
         plt.xlabel('x [m]')
         plt.ylabel('y [m]')
 
-    plt.show()
+    return fig
 
 
 def plot_piecewise_linear_coil(coords_max, spacing, R):
@@ -147,4 +149,4 @@ def plot_piecewise_linear_coil(coords_max, spacing, R):
         plt.xlabel('x [m]')
         plt.ylabel('y [m]')
 
-    plt.show()
+    return fig
