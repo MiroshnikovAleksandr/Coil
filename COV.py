@@ -218,7 +218,7 @@ def COV_circle(Bz, max_coil_r, height, spacing, P):
     cx = cp // 2  # center of calc area
     cy = cp // 2
     cell_size = 2 * calc_radius / cp
-    tiles = np.zeros([cp, cp])
+    tiles = np.ones([cp, cp])
     r_cov_m = max_coil_r * P  # Uniform area
     r_cov = r_cov_m / cell_size  # Uniform area in cells
     mask_circular(tiles, cx, cy, round(r_cov))
@@ -248,7 +248,7 @@ def COV_square(Bz, X_side, Y_side, height, spacing, P):
     calc_radius = max([X_side, Y_side]) * spacing
     cell_size = 2 * calc_radius / (cp + 1)
     view_plane = round(height / cell_size) + 1 + round(cp / 2)
-    tiles = np.zeros((0, 0))
+    tiles = np.zeros((cp, cp))
 
     X_side_COV = X_side * P / cell_size
     Y_side_COV = Y_side * P / cell_size
@@ -298,4 +298,4 @@ def COV_piecewise_linear(Bz, coords, height, spacing, P):
     Bz_mean = np.sum(Bz_masked) / np.sum(tiles)
     Bz_std = np.sqrt((np.sum((Bz_masked - np.multiply(Bz_mean, tiles)) ** 2)) / (np.sum(tiles)))
     COV = Bz_std / Bz_mean
-    return COV
+    return abs(COV)

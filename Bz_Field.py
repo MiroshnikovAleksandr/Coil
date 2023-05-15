@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from scipy.special import ellipk,ellipkm1, ellipe
+from scipy.special import ellipk, ellipkm1, ellipe
 
 
 def prop_coeff(R):
@@ -9,9 +9,10 @@ def prop_coeff(R):
     ---------------
     """
     R.sort()
+    R.reverse()
     prop = []
-    for i in range(len(R)-1):
-        prop.append(R[i]/R[i+1])
+    for i in range(len(R)):
+        prop.append(R[i] / max(R))
 
     return prop
 
@@ -28,6 +29,9 @@ def Radii_in_sides_square(R, X_side, Y_side):
         Y_sides.append(Y_side * k)
 
     return X_sides, Y_sides
+
+
+# print(Radii_in_sides_square([1, 0.6, .4, .2], 10, 30))
 
 
 def Radii_in_coords(R, coords_max):
@@ -79,9 +83,9 @@ def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
         Bz_segment = C * (Bz_segment2 - Bz_segment1)
     elif x1 == x2 and y1 != y2:
         x = x1
-        alpha = zv**2 + (xv - x)**2
+        alpha = zv ** 2 + (xv - x) ** 2
 
-        Bz_segment1 = ((x - xv) * (y1 - yv)) / (alpha * np.sqrt((y1 - yv)**2 + alpha))
+        Bz_segment1 = ((x - xv) * (y1 - yv)) / (alpha * np.sqrt((y1 - yv) ** 2 + alpha))
         Bz_segment2 = ((x - xv) * (y2 - yv)) / (alpha * np.sqrt((y2 - yv) ** 2 + alpha))
 
         Bz_segment = C * (Bz_segment2 - Bz_segment1)
@@ -98,7 +102,7 @@ def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
     return Bz_segment
 
 
-def Bz_piecewise_linear_contour_single(coords,  I, spacing, cp, g, direction):
+def Bz_piecewise_linear_contour_single(coords, I, spacing, cp, g, direction):
     """
     Calculates Bz field of piecewise linear coil
     ---------------
@@ -112,19 +116,21 @@ def Bz_piecewise_linear_contour_single(coords,  I, spacing, cp, g, direction):
     if not direction:
         I = -I
 
-    I = np.sqrt(2)*I
+    I = np.sqrt(2) * I
 
     Bz_piecewise_linear_contour_single = np.zeros((cp, cp, cp))
     for i in range(len(coords)):
         try:
-            Bz_piecewise_linear_contour_single += Bz_segment(coords[i][0], coords[i][1], coords[i + 1][0], coords[i + 1][1], g, I, spacing, cp)
+            Bz_piecewise_linear_contour_single += Bz_segment(coords[i][0], coords[i][1], coords[i + 1][0],
+                                                             coords[i + 1][1], g, I, spacing, cp)
         except IndexError:
-            Bz_piecewise_linear_contour_single += Bz_segment(coords[0][0], coords[0][1], coords[i][0], coords[i][1], g, I, spacing, cp)
+            Bz_piecewise_linear_contour_single += Bz_segment(coords[0][0], coords[0][1], coords[i][0], coords[i][1], g,
+                                                             I, spacing, cp)
 
     return Bz_piecewise_linear_contour_single
 
 
-def Bz_piecewise_linear_contour(R, coords,  I, spacing, cp, direction=True):
+def Bz_piecewise_linear_contour(R, coords, I, spacing, cp, direction=True):
     """
     Calculates the Bz field for a piecewise linear contour
     ---------------
@@ -189,7 +195,6 @@ def Bz_circular_contour(R, I, spacing, cp):
     for r in R:
         Bz_circular_contour += Bz_circular_single(max(R), r, I, spacing, cp)
 
-
     return Bz_circular_contour
 
 
@@ -197,6 +202,7 @@ def Bz_square_single(m, n, I, spacing, cp, max_side):
     """
     Calculates the Bz field of a single square coil
     ---------------
+    @param max_side: largest side
     @param m: Side parallel to the x-axis
     @param n: Side parallel to the y-axis
     @param I: Current in the contour

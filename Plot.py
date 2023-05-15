@@ -97,7 +97,7 @@ def plot_square_coil(m_max, n_max, spacing, R):
     @param spacing: Spacing between coil and the calculation domain boundary
     @param R: Set of radii
     """
-    m_i, n_i = R_in_sides_square(R, m_max, n_max)
+    m_i, n_i = Radii_in_sides_square(R, m_max, n_max)
 
     fig = plt.figure(figsize=(3, 3), dpi=300)
     ax = fig.subplots()

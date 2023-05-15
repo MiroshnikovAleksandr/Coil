@@ -70,4 +70,3 @@ st.write(sum(length))
 st.pyplot(coil_pic, dpi=1000)
 # st.pyplot(field_pic_2d, dpi=1000)
 st.pyplot(field_pic_3d, dpi=1000)
-

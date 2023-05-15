@@ -21,7 +21,7 @@ def main():
     # Genetic
     len_of_turn = 5
     no_of_generations = 50  # максимальное количество поколений
-    population_size = 250  # количество индивидуумов в популяции
+    population_size = 100  # количество индивидуумов в популяции
     # size_of_individual = 1000 - (1000 % no_of_variables) # длина подлежащей оптимизации битовой строки
     probability_of_mutation = 0.1  # вероятность мутации индивидуума
     tournSel_k = 4
@@ -34,9 +34,9 @@ def main():
     spacing = 1.5  # spacing for calculation domain
     cp = 30  # Calculation domain points
 
-    seed = random.randrange(sys.maxsize)
-    rng = random.Random(seed)
-    print("Seed was:", seed)
+    # seed = random.randrange(sys.maxsize)
+    # rng = random.Random(seed)
+    # print("Seed was:", seed)
 
     # one tuple or a pair of lower bound and upper bound for each variable
     # bounds = [(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max)]

@@ -10,6 +10,7 @@ import numpy as np
 import Bz_Field as Bz
 import COV
 import tomli
+import Field_functions as ff
 
 # from scoop import futures
 # import multiprocessing
@@ -48,16 +49,21 @@ class Genetic:
         self.tournSel_k = params['gen']['tournSel_k']
         self.CXPB = params['gen']['CXPB']
         self.MUTPB = params['gen']['MUTPB']
-        self.a_max = params['geom']['a_max']
-        self.a_min = params['geom']['a_min']
+
+        self.figure = params['geom']['figure']
+        self.X_side = params['geom']['X_side']
+        self.Y_side = params['geom']['Y_side']
+        if self.figure != 'Circular':
+            self.a_max = max(self.X_side, self.Y_side)/2
+            self.a_min = self.a_max/10
+        else:
+            self.a_max = params['geom']['a_max']
+            self.a_min = params['geom']['a_min']
         self.I = params['geom']['I']
         self.spacing = params['geom']['spacing']
         self.cp = params['geom']['cp']
         self.minimal_gap = params['geom']['minimal_gap']
-        self.figure = params['geom']['figure']
         self.height = params['geom']['height']
-        self.X_side = params['geom']['X_side']
-        self.Y_side = params['geom']['Y_side']
         self.coords = params['geom']['coords']
         self.calculation_area = params['geom']['calculation_area']
         self.material = params['geom']['material']
@@ -146,10 +152,11 @@ class Genetic:
 
     def determine_Bz(self, individual):
         if self.figure == 'Circular':
-            return Bz.Bz_circular_contour(R=self.decode_all_x(individual),
-                                          I=self.I,
-                                          spacing=self.spacing,
-                                          cp=self.cp)
+            return ff.Bz(self.a_max, self.a_min, 2, self.I, self.spacing, self.cp, self.decode_all_x(individual))
+            # return Bz.Bz_circular_contour(R=self.decode_all_x(individual),
+            #                               I=self.I,
+            #                               spacing=self.spacing,
+            #                               cp=self.cp)
         elif self.figure == 'Rectangle':
             return Bz.Bz_square_contour(R=self.decode_all_x(individual),
                                         X_side=self.X_side,
@@ -162,15 +169,17 @@ class Genetic:
                                                   coords=self.coords,
                                                   I=self.I,
                                                   spacing=self.spacing,
-                                                  cp=self.cp)
+                                                  cp=self.cp,
+                                                  direction=False)
 
     def determine_COV(self, bz):
         if self.figure == 'Circular':
-            return COV.COV_circle(Bz=bz,
-                                  max_coil_r=self.a_max,
-                                  height=self.height,
-                                  spacing=self.spacing,
-                                  P=self.calculation_area)
+            return ff.COV_circ(bz, self.a_max, self.height, self.spacing)
+            # return COV.COV_circle(Bz=bz,
+            #                       max_coil_r=self.a_max,
+            #                       height=self.height,
+            #                       spacing=self.spacing,
+            #                       P=self.calculation_area)
         elif self.figure == 'Rectangle':
             return COV.COV_square(Bz=bz,
                                   X_side=self.X_side,
@@ -274,14 +283,13 @@ class Genetic:
         Displays the results (statistics plot, best COV, total length of the best individual).
         @return:
         """
-        self.radii = self.decode_all_x(self.hall_of_fame[0])
-        self.COV = self.objective_fxn(self.hall_of_fame[0])[0]
+        print(self.decode_all_x(self.hall_of_fame[0]))
 
 
-# GA = Genetic(parameters)
-# GA.preparation()
-# GA.execution()
-# GA.show()
+GA = Genetic(parameters)
+GA.preparation()
+GA.execution()
+GA.show()
 # for i in range(50, 101, 10):
 #     no_of_generations = i
 #     GA = Genetic(parameters)

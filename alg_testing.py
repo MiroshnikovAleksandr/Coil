@@ -26,8 +26,8 @@ def stop_criteria(GA):
     return res[0]
 
 
-CXPB = np.linspace(0.0, 1.0, n)
-MUTPB = np.linspace(0.0, 1.0, n)
+CXPB = np.linspace(0.1, 1.0, n)
+MUTPB = np.linspace(0.01, 1.0, n)
 
 matrix = []
 for cxpb in CXPB:
