@@ -20,23 +20,23 @@ import Field_functions as ff
 def main():
     # Genetic
     len_of_turn = 5
-    no_of_generations = 80  # максимальное количество поколений
-    population_size = 250  # количество индивидуумов в популяции
+    no_of_generations = 50  # максимальное количество поколений
+    population_size = 100  # количество индивидуумов в популяции
     # size_of_individual = 1000 - (1000 % no_of_variables) # длина подлежащей оптимизации битовой строки
     probability_of_mutation = 0.1  # вероятность мутации индивидуума
     tournSel_k = 4
     CXPB, MUTPB = 0.4, 0.04  # вероятность мутации и срещивания
 
-    # Geometrical & Electrical parameters
+    # Geometrical & Electrical parameters.toml
     a_max = 0.5  # [m] Max coil radius
     a_min = 0.05  # [m] Min coil radius
     I = 1  # [A] Current
     spacing = 1.5  # spacing for calculation domain
     cp = 30  # Calculation domain points
 
-    seed = random.randrange(sys.maxsize)
-    rng = random.Random(seed)
-    print("Seed was:", seed)
+    # seed = random.randrange(sys.maxsize)
+    # rng = random.Random(seed)
+    # print("Seed was:", seed)
 
     # one tuple or a pair of lower bound and upper bound for each variable
     # bounds = [(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max)]
@@ -141,7 +141,7 @@ def main():
         return l
 
     def check_feasibility(ind):
-        if length(ind) > 20: return False
+        if length(ind) > 100: return False
         else: return True
 
     def mutate(ind, Indpb):

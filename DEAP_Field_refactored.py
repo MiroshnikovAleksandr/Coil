@@ -7,13 +7,26 @@ import math
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import Field_functions as ff
+import Bz_Field as Bz
+import COV
 import tomli
+import Field_functions as ff
+
+# from scoop import futures
+# import multiprocessing
+
+# seed = 4090899410329119572
+# random.seed(seed)
 
 with open('parameters.toml', 'rb') as toml:
     parameters = tomli.load(toml)
 
 toolbox = base.Toolbox()  # create toolbox for genetic algorithm
+
+# toolbox.register("map", futures.map)
+# pool = multiprocessing.Pool()
+# toolbox.register("map", pool.map)
+
 creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMin)
 
@@ -22,7 +35,10 @@ class Genetic:
     """
     This class describes the genetic algorithm.
     """
+
     def __init__(self, params):
+        self.COV = None
+        self.radii = None
         self.hall_of_fame = None
         self.logbook = None
         self.pop = None
@@ -33,12 +49,25 @@ class Genetic:
         self.tournSel_k = params['gen']['tournSel_k']
         self.CXPB = params['gen']['CXPB']
         self.MUTPB = params['gen']['MUTPB']
-        self.a_max = params['geom']['a_max']
-        self.a_min = params['geom']['a_min']
+
+        self.figure = params['geom']['figure']
+        self.X_side = params['geom']['X_side']
+        self.Y_side = params['geom']['Y_side']
+        if self.figure != 'Circular':
+            self.a_max = max(self.X_side, self.Y_side)/2
+            self.a_min = self.a_max/10
+        else:
+            self.a_max = params['geom']['a_max']
+            self.a_min = params['geom']['a_min']
         self.I = params['geom']['I']
         self.spacing = params['geom']['spacing']
         self.cp = params['geom']['cp']
         self.minimal_gap = params['geom']['minimal_gap']
+        self.height = params['geom']['height']
+        self.coords = params['geom']['coords']
+        self.calculation_area = params['geom']['calculation_area']
+        self.material = params['geom']['material']
+        self.freq = params['geom']['freq']
 
     def preparation(self):
         """
@@ -60,7 +89,7 @@ class Genetic:
         Calculates boundaries of coil turn placement based on the diameter of the wire;
         sorts the turns of an individual (coil) in descending order.
         @param ind: creator.Individual
-        @return: list
+        @return: list, containing the sorted individual and the boundaries
         """
         ind = [0] * (self.len_of_turn - (len(ind) % self.len_of_turn)) + ind
 
@@ -96,7 +125,7 @@ class Genetic:
         """
         Decodes the individual from 1-0 code to a sequence of radiuses of turns of the coil.
         @param individual: creator.Individual
-        @return: list
+        @return: list of radiuses
         """
         len_chromosome_one_var = self.len_of_turn
         bound_index = 0
@@ -121,20 +150,61 @@ class Genetic:
 
         return x
 
+    def determine_Bz(self, individual):
+        if self.figure == 'Circular':
+            return ff.Bz(self.a_max, self.a_min, 2, self.I, self.spacing, self.cp, self.decode_all_x(individual))
+            # return Bz.Bz_circular_contour(R=self.decode_all_x(individual),
+            #                               I=self.I,
+            #                               spacing=self.spacing,
+            #                               cp=self.cp)
+        elif self.figure == 'Rectangle':
+            return Bz.Bz_square_contour(R=self.decode_all_x(individual),
+                                        X_side=self.X_side,
+                                        Y_side=self.Y_side,
+                                        I=self.I,
+                                        spacing=self.spacing,
+                                        cp=self.cp)
+        elif self.figure == 'Piecewise':
+            return Bz.Bz_piecewise_linear_contour(R=self.decode_all_x(individual),
+                                                  coords=self.coords,
+                                                  I=self.I,
+                                                  spacing=self.spacing,
+                                                  cp=self.cp,
+                                                  direction=False)
+
+    def determine_COV(self, bz):
+        if self.figure == 'Circular':
+            return ff.COV_circ(bz, self.a_max, self.height, self.spacing)
+            # return COV.COV_circle(Bz=bz,
+            #                       max_coil_r=self.a_max,
+            #                       height=self.height,
+            #                       spacing=self.spacing,
+            #                       P=self.calculation_area)
+        elif self.figure == 'Rectangle':
+            return COV.COV_square(Bz=bz,
+                                  X_side=self.X_side,
+                                  Y_side=self.Y_side,
+                                  height=self.height,
+                                  spacing=self.spacing,
+                                  P=self.calculation_area)
+        elif self.figure == 'Piecewise':
+            return COV.COV_piecewise_linear(Bz=bz,
+                                            coords=self.coords,
+                                            height=self.height,
+                                            spacing=self.spacing,
+                                            P=self.calculation_area)
+
     def objective_fxn(self, individual):
         """
         This is the objective function of the genetic algorithm. It returns the coefficient of variation
         of the magnetic field induced by the coil.
         @param individual: creator.Individual
-        @return: list
+        @return: list, containing the COV
         """
-        r_i = self.decode_all_x(individual)
-        Bz = ff.Bz(self.a_max, self.a_min, len(r_i), self.I, self.spacing, self.cp, r_i)
+        bz = self.determine_Bz(individual)
+        cov = self.determine_COV(bz)
 
-        height = 0.015  # [m]
-        COV = ff.COV_circ(Bz, self.a_max, height, self.spacing)
-
-        obj_function_value = COV
+        obj_function_value = cov
         return [obj_function_value]
 
     def mutate(self, ind, Indpb):
@@ -176,7 +246,7 @@ class Genetic:
         """
         Executes the genetic algorithm with selection, mating and mutation.
         Also stores the best individual from the perspective of its objective function in @hall_of_fame@.
-        @return: list
+        @return: list, containing the COV of the best individual
         """
         # registering objective function with constraint
         toolbox.register("evaluate", self.objective_fxn)  # privide the objective function here
@@ -206,38 +276,24 @@ class Genetic:
 
         self.hall_of_fame = tools.HallOfFame(1)
         self.hall_of_fame.update(self.pop)
-        return self.objective_fxn(self.hall_of_fame[0])
+        return self.decode_all_x(self.hall_of_fame[0])
 
     def show(self):
         """
         Displays the results (statistics plot, best COV, total length of the best individual).
         @return:
         """
-
-        fig = plt.figure()
-        ax = fig.add_subplot(111)
-        # using select method in logbook object to extract the argument/key as list
-        plt.plot(self.logbook.select('Min'))
-
-        ax.set_title("Minimum values of f(x,y) Reached Through Generations", fontsize=20, fontweight='bold')
-        ax.set_xlabel("Generations", fontsize=18, fontweight='bold')
-        ax.set_ylabel("Value of Himmelblau's Function", fontsize=18, fontweight='bold')
-        # ax.set_xticks(fontweight='bold')
-        # ax.set_yticks(fontweight='bold')
-
         print(self.decode_all_x(self.hall_of_fame[0]))
-        print(self.objective_fxn(self.hall_of_fame[0])[0])
-
-        print(f'Total length = {self.length(self.hall_of_fame[0])} m.')
-        #plt.show()
-        return fig
-
-        # df = pd.DataFrame(self.decode_all_x(hall_of_fame[0]))
-        # df.to_excel('hall_of_fame.xlsx')
 
 
-if __name__ == '__main__':
-    GA = Genetic(parameters)
-    GA.preparation()
-    GA.execution()
-    GA.show()
+GA = Genetic(parameters)
+GA.preparation()
+GA.execution()
+GA.show()
+# for i in range(50, 101, 10):
+#     no_of_generations = i
+#     GA = Genetic(parameters)
+#     GA.preparation()
+#     GA.execution()
+#     GA.show()
+# plt.show()
