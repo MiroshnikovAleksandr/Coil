@@ -21,6 +21,7 @@ import Field_functions as ff
 with open('parameters.toml', 'rb') as toml:
     parameters = tomli.load(toml)
 
+
 toolbox = base.Toolbox()  # create toolbox for genetic algorithm
 
 # toolbox.register("map", futures.map)
@@ -286,10 +287,6 @@ class Genetic:
         print(self.decode_all_x(self.hall_of_fame[0]))
 
 
-GA = Genetic(parameters)
-GA.preparation()
-GA.execution()
-GA.show()
 # for i in range(50, 101, 10):
 #     no_of_generations = i
 #     GA = Genetic(parameters)
