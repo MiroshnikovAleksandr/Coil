@@ -213,20 +213,24 @@ class Genetic:
         Displays the results (statistics plot, best COV, total length of the best individual).
         @return:
         """
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
         # using select method in logbook object to extract the argument/key as list
         plt.plot(self.logbook.select('Min'))
 
-        plt.title("Minimum values of f(x,y) Reached Through Generations", fontsize=20, fontweight='bold')
-        plt.xlabel("Generations", fontsize=18, fontweight='bold')
-        plt.ylabel("Value of Himmelblau's Function", fontsize=18, fontweight='bold')
-        plt.xticks(fontweight='bold')
-        plt.yticks(fontweight='bold')
+        ax.set_title("Minimum values of f(x,y) Reached Through Generations", fontsize=20, fontweight='bold')
+        ax.set_xlabel("Generations", fontsize=18, fontweight='bold')
+        ax.set_ylabel("Value of Himmelblau's Function", fontsize=18, fontweight='bold')
+        # ax.set_xticks(fontweight='bold')
+        # ax.set_yticks(fontweight='bold')
 
         print(self.decode_all_x(self.hall_of_fame[0]))
         print(self.objective_fxn(self.hall_of_fame[0])[0])
 
         print(f'Total length = {self.length(self.hall_of_fame[0])} m.')
         #plt.show()
+        return fig
 
         # df = pd.DataFrame(self.decode_all_x(hall_of_fame[0]))
         # df.to_excel('hall_of_fame.xlsx')

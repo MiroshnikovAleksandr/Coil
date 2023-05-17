@@ -365,7 +365,7 @@ def Bz_square(m_max,n_max,n,I,spacing,cp,m_i,n_i):
 
     C = mu0*I/(4*np.pi)
 
-    for i, size_m in enumerate(m_i):
+    for i, size_m in enumerate(n_i):
         for j, size_n in enumerate(n_i):
             if i == j:
                 c1 = xv + size_m/2
@@ -421,7 +421,8 @@ def plot_3d(Bz,height,a_max,spacing,cp):
     surf = ax.plot_surface(xv[:,:,1]*1e2,yv[:,:,1]*1e2,Bz[:,:,view_line]*1e6, cmap='inferno')
     ax.set_title('Bz Field at {} mm height'.format(height*1e3))
     plt.xlabel('x [cm]')
-    plt.ylabel('y [cm]')    
+    plt.ylabel('y [cm]')
+    return fig
 
 
 def plot_vector(Bz,height,a_max,spacing,cp):
@@ -490,3 +491,4 @@ def plot_square_coil(m_max,n_max,spacing,m_i,n_i):
         plt.ylabel('y [m]')
         
     plt.show()
+    return fig
