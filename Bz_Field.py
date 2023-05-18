@@ -3,6 +3,22 @@ import math
 from scipy.special import ellipk, ellipkm1, ellipe
 
 
+def transposition(xv, yv, zv):
+    cp = len(xv)
+    xv_T = np.zeros((cp, cp, cp))
+    for i in range(len(xv)):
+        xv_T[:, :, i] += xv[:, :, i].T
+
+    zv_T = np.zeros((cp, cp, cp))
+    for i in range(len(zv)):
+        zv_T[:, :, i] += zv[:, :, i].T
+
+    yv_T = np.zeros((cp, cp, cp))
+    for i in range(len(yv)):
+        yv_T[:, :, i] += yv[:, :, i].T
+    return xv_T, yv_T, zv_T
+
+
 def prop_coeff(R):
     """
     Calculates the radius reduction factor
@@ -48,6 +64,20 @@ def Radii_in_coords(R, coords_max):
         list_of_coords.append(new_coords)
     return list_of_coords
 
+# for i in range(
+#     len(Radii_in_coords([0.2, 0.4, 0.6, 1],
+#                       coords_max=[[-0.5, -0.866025], [-1, 0], [-0.5, 0.866025], [0.5, 0.866025], [1, 0],
+#                                   [0.5, -0.866025]]))):
+#     for j in range(len(Radii_in_coords([0.2, 0.4, 0.6, 1],
+#                       coords_max=[[-0.5, -0.866025], [-1, 0], [-0.5, 0.866025], [0.5, 0.866025], [1, 0],
+#                                   [0.5, -0.866025]])[i])):
+#         print(Radii_in_coords([0.2, 0.4, 0.6, 1],
+#                       coords_max=[[-0.5, -0.866025], [-1, 0], [-0.5, 0.866025], [0.5, 0.866025], [1, 0],
+#                                   [0.5, -0.866025]])[i][j])
+# print(Radii_in_coords([0.2, 0.4, 0.6, 1],
+#                       coords_max=[[-0.5, -0.866025], [-1, 0], [-0.5, 0.866025], [0.5, 0.866025], [1, 0],
+#                                   [0.5, -0.866025]]))
+
 
 def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
     """
@@ -67,6 +97,7 @@ def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
     calc_radius = g * spacing
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)
+    xv, yv, zv = transposition(xv, yv, zv)
 
     if x1 != x2 and y1 != y2:
         k = (y2 - y1) / (x2 - x1)
@@ -214,6 +245,7 @@ def Bz_square_single(m, n, I, spacing, cp, max_side):
     calc_radius = max_side * spacing  # Calculation domain length
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)  # Creating meshgrid
+    xv, yv, zv = transposition(xv, yv, zv)
 
     C = mu0 * I / (4 * np.pi)
 

@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from Bz_Field import Radii_in_coords, Radii_in_sides_square
+from Bz_Field import Radii_in_coords, Radii_in_sides_square, transposition
 
 
 def plot_2d(Bz, height, a_max, spacing, cp):
@@ -29,11 +29,12 @@ def plot_3d(Bz, height, a_max, spacing, cp):
     calc_radius = a_max * spacing  # Calculation domain length
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)  # Creating meshgrid
+    xv, yv, zv = transposition(xv, yv, zv)
     view_line = height / (2 * calc_radius / np.size(x)) + np.size(x) / 2
     view_line = int(view_line)
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    surf = ax.plot_surface(xv[:, :, 1] * 1e2, yv[:, :, 1] * 1e2, Bz[:, :, view_line] * 1e6, cmap='inferno')
+    ax.plot_surface(xv[:, :, 1] * 1e2, yv[:, :, 1] * 1e2, Bz[:, :, view_line] * 1e6, cmap='inferno')
     ax.set_title('Bz Field at {} mm height'.format(height * 1e3))
     plt.xlabel('x [cm]')
     plt.ylabel('y [cm]')

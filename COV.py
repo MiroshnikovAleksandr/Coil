@@ -298,4 +298,4 @@ def COV_piecewise_linear(Bz, coords, height, spacing, P):
     Bz_mean = np.sum(Bz_masked) / np.sum(tiles)
     Bz_std = np.sqrt((np.sum((Bz_masked - np.multiply(Bz_mean, tiles)) ** 2)) / (np.sum(tiles)))
     COV = Bz_std / Bz_mean
-    return abs(COV)
+    return COV
