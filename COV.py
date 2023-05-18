@@ -252,8 +252,8 @@ def mask_piecewise_linear(tiles, coords):
             X.clear()
             Y.clear()
         except IndexError:
-            x1, y1 = coords[0][0], coords[0][1]
-            x2, y2 = coords[i][0], coords[i][1]
+            x1, y1 = coords[i][0], coords[i][1]
+            x2, y2 = coords[0][0], coords[0][1]
             X = []
             Y = []
             if y1 > y2:

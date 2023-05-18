@@ -6,23 +6,23 @@ import Resistance
 import COV
 
 
-R = [1, 0.6, 0.4, 0.2]
+R = [1]
 # coords = [[-3, -4], [-3, -3], [-4, -3], [-4, 3], [-3, 3], [-3, 4], [3, 4], [3, 3], [4, 3], [4, -3], [3, -3], [3, -4]]
 # coords = [[-0.5, -0.866025], [-1, 0], [-0.5, 0.866025], [0.5, 0.866025], [1, 0], [0.5, -0.866025]]
 # coords = [[-1.5, -np.sqrt(3)/2], [0, np.sqrt(3)], [1.5, -np.sqrt(3)/2]]
 # coords = [[0, -0.866025], [-0.5, 0], [0, 0.866025], [0.5, 0]]
-# coords_rectangle = [[0.05, -0.05], [-0.05, -0.05], [-0.05, 0.05], [0.05, 0.05]]
+# coords = [[0.05, -0.05], [-0.05, -0.05], [-0.05, 0.05], [0.05, 0.05]]
 # coords = [[-1, 7], [-1, 0], [-3, 0], [-3, -3], [0, -3], [0, -2], [1, -2], [1, -3], [4, -3], [4, 0], [2, 0], [2, 7]]
 # coords = [[-1, 7], [-1, 0], [-3, 0], [-3, -3], [4, -3], [4, 0], [2, 0], [2, 7]]
 coords = [[-0.05, -0.15], [-0.05, 0.15], [0.05, 0.15], [0.05, -0.15]]
 
-spacing = 1.5
 l = []
 for i in range(len(coords)):
     l.append(np.sqrt((coords[i][0])**2 + (coords[i][1])**2))
 
 g = max(l)
 I = 1
+print(g)
 P = 0.9
 spacing = 1.5
 cp = 30
@@ -35,9 +35,9 @@ Bz_piecewise = Bz_Field.Bz_piecewise_linear_contour_single(coords, I, spacing, c
 Plot.plot_2d(Bz_piecewise, height, g, spacing, cp)
 plt.show()
 #
-Bz_square = Bz_Field.Bz_square_single(X_side, Y_side, I, spacing, cp, max([X_side, Y_side]))
-Plot.plot_2d(Bz_square, height, max([X_side, Y_side]), spacing, cp)
-plt.show()
+# Bz_square = Bz_Field.Bz_square_single(X_side, Y_side, I, spacing, cp, max([X_side, Y_side]))
+# Plot.plot_2d(Bz_square, height, max([X_side, Y_side]), spacing, cp)
+# plt.show()
 
 # for i in range(len(coords)):
 #     coords[i][0] = round(coords[i][0]*10 + 15)
@@ -51,6 +51,7 @@ plt.show()
 # Plot.plot_2d(Bz, height, g, spacing, cp)
 # Plot.plot_3d(Bz, height, g, spacing, cp)
 # Plot.plot_piecewise_linear_coil(coords, spacing, R)
+# plt.show()
 
 # Plot.plot_square_coil(X_side, Y_side, spacing, R)
 # plt.show()

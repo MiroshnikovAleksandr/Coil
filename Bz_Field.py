@@ -63,7 +63,7 @@ def Radii_in_coords(R, coords_max):
     return list_of_coords
 
 
-def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
+def Bz_segment(start_point, end_point, g, I, spacing, cp):
     """
     Calculates z-component of B field of single-segment
     ---------------
@@ -75,6 +75,8 @@ def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
     @param cp: Calculation domain points
     @return: Z-component of B field of single-segment
     """
+    x1, y1 = start_point[0], start_point[1]
+    x2, y2 = end_point[0], end_point[1]
     mu0 = np.pi * 4e-7
     C = mu0 * I / (4 * np.pi)
 
@@ -97,12 +99,16 @@ def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
         Bz_segment_1 = C * (abs(x1 - betta) * gamma) / (delta * np.sqrt((alpha * (x1 - betta))**2 + delta))
         Bz_segment_2 = C * (abs(x2 - betta) * gamma) / (delta * np.sqrt((alpha * (x2 - betta))**2 + delta))
 
+        return Bz_segment_2 - Bz_segment_1
+
     elif x1 == x2 and y1 != y2:
 
         alpha = zv**2 + (x1 - xv)**2
 
         Bz_segment_1 = C * ((x1 - xv) * abs(y1 - yv)) / (alpha * np.sqrt((y1 - yv)**2 + alpha))
         Bz_segment_2 = C * ((x1 - xv) * abs(y2 - yv)) / (alpha * np.sqrt((y2 - yv)**2 + alpha))
+
+        return Bz_segment_2 - Bz_segment_1
 
     elif x1 != x2 and y1 == y2:
 
@@ -111,9 +117,7 @@ def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
         Bz_segment_1 = C * ((yv - y1) * abs(x1 - xv)) / (alpha * np.sqrt((x1 - xv) ** 2 + alpha))
         Bz_segment_2 = C * ((yv - y1) * abs(x2 - xv)) / (alpha * np.sqrt((x2 - xv) ** 2 + alpha))
 
-    Bz_segment = Bz_segment_2 - Bz_segment_1
-
-    return Bz_segment
+        return Bz_segment_2 - Bz_segment_1
 
 
 def Bz_piecewise_linear_contour_single(coords,  I, spacing, cp, g, direction):
@@ -128,14 +132,15 @@ def Bz_piecewise_linear_contour_single(coords,  I, spacing, cp, g, direction):
     @return: Z-component B of the field of single coil
     """
     I = np.sqrt(2) * I
+
     if not direction:
         I = -I
 
     Bz_piecewise_linear_contour_single = np.zeros((cp, cp, cp))
     for i in range(len(coords) - 1):
-        Bz_piecewise_linear_contour_single += Bz_segment(coords[i][0], coords[i][1], coords[i + 1][0], coords[i + 1][1], g, I, spacing, cp)
+        Bz_piecewise_linear_contour_single += Bz_segment(coords[i], coords[i + 1], g, I, spacing, cp)
 
-    Bz_piecewise_linear_contour_single += Bz_segment(coords[0][0], coords[0][1], coords[len(coords) - 1][0], coords[len(coords) - 1][1], g, I, spacing, cp)
+    Bz_piecewise_linear_contour_single += Bz_segment(coords[len(coords) - 1], coords[0], g, I, spacing, cp)
 
     return Bz_piecewise_linear_contour_single
 

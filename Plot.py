@@ -10,10 +10,9 @@ def plot_2d(Bz, height, a_max, spacing, cp):
     """
     calc_radius = a_max * spacing  # Calculation domain length
     x = np.linspace(-calc_radius, calc_radius, cp)
-    view_line = height / (2 * calc_radius / np.size(x)) + np.size(x) / 2
-    view_line = int(view_line)
+    view_plane = int(height / (2 * calc_radius / cp) + cp / 2)
     fig = plt.figure()
-    plt.plot(x * 1e2, Bz[:, view_line, view_line] * 1e6)
+    plt.plot(x * 1e2, Bz[:, cp // 2, view_plane] * 1e6)
     plt.xlabel('x [cm]')
     plt.ylabel('Bz [uT]')
     plt.title('Bz Field at {} mm height'.format(height * 1e3))
@@ -145,7 +144,7 @@ def plot_piecewise_linear_coil(coords_max, spacing, R):
             try:
                 plt.plot([coords[i][0], coords[i + 1][0]], [coords[i][1], coords[i + 1][1]], color='#000000')
             except IndexError:
-                plt.plot([coords[0][0], coords[i][0]], [coords[0][1], coords[i][1]], color='#000000')
+                plt.plot([coords[i][0], coords[0][0]], [coords[i][1], coords[0][1]], color='#000000')
 
         plt.xlabel('x [m]')
         plt.ylabel('y [m]')
