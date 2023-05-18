@@ -1,4 +1,4 @@
-import numpy as np
+import see_on_arrays as np
 
 
 def Coil_resistance(material, l, d, nu):

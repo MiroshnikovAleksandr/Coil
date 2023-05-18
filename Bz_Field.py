@@ -3,15 +3,32 @@ import math
 from scipy.special import ellipk,ellipkm1, ellipe
 
 
+def transposition(xv, yv, zv):
+    cp = len(xv)
+
+    xv_T = np.zeros((cp, cp, cp))
+    yv_T = np.zeros((cp, cp, cp))
+    zv_T = np.zeros((cp, cp, cp))
+
+    for i in range(cp):
+        xv_T[i] = xv[:, :, i].T
+        yv_T[i] = yv[:, :, i].T
+        zv_T[i] = zv[:, :, i].T
+
+    return xv_T, yv_T, zv_T
+
+
 def prop_coeff(R):
     """
     Calculates the radius reduction factor
     ---------------
     """
     R.sort()
+    R.reverse()
     prop = []
-    for i in range(len(R)-1):
-        prop.append(R[i]/R[i+1])
+    max_r = max(R)
+    for i in range(len(R)):
+        prop.append(R[i]/max_r)
 
     return prop
 
@@ -42,6 +59,7 @@ def Radii_in_coords(R, coords_max):
         for point in coords_max:
             new_coords.append([point[0] * k, point[1] * k])
         list_of_coords.append(new_coords)
+
     return list_of_coords
 
 
@@ -64,36 +82,36 @@ def Bz_segment(x1, y1, x2, y2, g, I, spacing, cp):
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)
 
+    xv, yv, zv = transposition(xv, yv, zv)
+
     if x1 != x2 and y1 != y2:
+
         k = (y2 - y1) / (x2 - x1)
-        b = (y1 * x2 - y2 * x1) / (x2 - x1)
-        alpha = yv - (xv * k + b)
-        betta = k ** 2 + 1
-        gamma = k * (yv - b) + xv
+        b = y2 - k*x2
 
-        Bz_segment1 = (alpha * (betta * x1 - gamma)) / ((betta ** 2 * zv ** 2 + alpha ** 2) * np.sqrt(
-            betta * x1 ** 2 - 2 * gamma * x1 + zv ** 2 + (yv - b) ** 2 + xv ** 2))
-        Bz_segment2 = (alpha * (betta * x2 - gamma)) / ((betta ** 2 * zv ** 2 + alpha ** 2) * np.sqrt(
-            betta * x2 ** 2 - 2 * gamma * x2 + zv ** 2 + (yv - b) ** 2 + xv ** 2))
+        alpha = np.sqrt(k**2 + 1)
+        betta = (xv + k*yv - b) / (alpha**2)
+        gamma = yv - (k*xv + b)
+        delta = zv**2 + (gamma / alpha)**2
 
-        Bz_segment = C * (Bz_segment2 - Bz_segment1)
+        Bz_segment_1 = C * (abs(x1 - betta) * gamma) / (delta * np.sqrt((alpha * (x1 - betta))**2 + delta))
+        Bz_segment_2 = C * (abs(x2 - betta) * gamma) / (delta * np.sqrt((alpha * (x2 - betta))**2 + delta))
+
     elif x1 == x2 and y1 != y2:
-        x = x1
-        alpha = zv**2 + (xv - x)**2
 
-        Bz_segment1 = ((x - xv) * (y1 - yv)) / (alpha * np.sqrt((y1 - yv)**2 + alpha))
-        Bz_segment2 = ((x - xv) * (y2 - yv)) / (alpha * np.sqrt((y2 - yv) ** 2 + alpha))
+        alpha = zv**2 + (x1 - xv)**2
 
-        Bz_segment = C * (Bz_segment2 - Bz_segment1)
+        Bz_segment_1 = C * ((x1 - xv) * abs(y1 - yv)) / (alpha * np.sqrt((y1 - yv)**2 + alpha))
+        Bz_segment_2 = C * ((x1 - xv) * abs(y2 - yv)) / (alpha * np.sqrt((y2 - yv)**2 + alpha))
 
     elif x1 != x2 and y1 == y2:
-        y = y1
-        alpha = zv ** 2 + (yv - y) ** 2
 
-        Bz_segment1 = ((yv - y) * (x1 - xv)) / (alpha * np.sqrt((x1 - xv) ** 2 + alpha))
-        Bz_segment2 = ((yv - y) * (x2 - xv)) / (alpha * np.sqrt((x2 - xv) ** 2 + alpha))
+        alpha = zv ** 2 + (y1 - yv) ** 2
 
-        Bz_segment = C * (Bz_segment2 - Bz_segment1)
+        Bz_segment_1 = C * ((yv - y1) * abs(x1 - xv)) / (alpha * np.sqrt((x1 - xv) ** 2 + alpha))
+        Bz_segment_2 = C * ((yv - y1) * abs(x2 - xv)) / (alpha * np.sqrt((x2 - xv) ** 2 + alpha))
+
+    Bz_segment = Bz_segment_2 - Bz_segment_1
 
     return Bz_segment
 
@@ -109,17 +127,15 @@ def Bz_piecewise_linear_contour_single(coords,  I, spacing, cp, g, direction):
     @param direction: The direction of the current along the contour. If the current flows clockwise, then by default this value is True
     @return: Z-component B of the field of single coil
     """
+    I = np.sqrt(2) * I
     if not direction:
         I = -I
 
-    I = np.sqrt(2)*I
-
     Bz_piecewise_linear_contour_single = np.zeros((cp, cp, cp))
-    for i in range(len(coords)):
-        try:
-            Bz_piecewise_linear_contour_single += Bz_segment(coords[i][0], coords[i][1], coords[i + 1][0], coords[i + 1][1], g, I, spacing, cp)
-        except IndexError:
-            Bz_piecewise_linear_contour_single += Bz_segment(coords[0][0], coords[0][1], coords[i][0], coords[i][1], g, I, spacing, cp)
+    for i in range(len(coords) - 1):
+        Bz_piecewise_linear_contour_single += Bz_segment(coords[i][0], coords[i][1], coords[i + 1][0], coords[i + 1][1], g, I, spacing, cp)
+
+    Bz_piecewise_linear_contour_single += Bz_segment(coords[0][0], coords[0][1], coords[len(coords) - 1][0], coords[len(coords) - 1][1], g, I, spacing, cp)
 
     return Bz_piecewise_linear_contour_single
 
@@ -142,9 +158,9 @@ def Bz_piecewise_linear_contour(R, coords,  I, spacing, cp, direction=True):
     for i in range(len(coords)):
         l.append(np.sqrt((coords[i][0]) ** 2 + (coords[i][1]) ** 2))
 
-    g = np.amax(l)
+    g = max(l)
 
-    Bz_piecewise_linear_contour = np.zeros([cp, cp, cp])
+    Bz_piecewise_linear_contour = np.zeros((cp, cp, cp))
 
     for coil in list_of_coords:
         Bz_piecewise_linear_contour += Bz_piecewise_linear_contour_single(coil, I, spacing, cp, g, direction)
@@ -167,6 +183,8 @@ def Bz_circular_single(r_max, a, I, spacing, cp):
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)  # Creating meshgrid
 
+    xv, yv, zv = transposition(xv, yv, zv)
+
     ro = np.sqrt(xv ** 2 + yv ** 2)
     r = np.sqrt(xv ** 2 + yv ** 2 + zv ** 2)
     C = mu0 * I / np.pi
@@ -184,10 +202,15 @@ def Bz_circular_contour(R, I, spacing, cp):
     Calculates the Bz field for a circular contour
     ---------------
     """
-    Bz_circular_contour = np.zeros([cp, cp, cp])
+    I = np.sqrt(2) * I
+    R.sort()
+    R.reverse()
+    Bz_circular_contour = np.zeros((cp, cp, cp))
+
+    r_max = max(R)
 
     for r in R:
-        Bz_circular_contour += Bz_circular_single(max(R), r, I, spacing, cp)
+        Bz_circular_contour += Bz_circular_single(r_max, r, I, spacing, cp)
 
 
     return Bz_circular_contour
@@ -209,10 +232,12 @@ def Bz_square_single(m, n, I, spacing, cp, max_side):
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)  # Creating meshgrid
 
+    xv, yv, zv = transposition(xv, yv, zv)
+
     C = mu0 * I / (4 * np.pi)
 
-    c1 = xv + m / 2
-    c2 = -xv + m / 2
+    c1 = m / 2 + xv
+    c2 = m / 2 - xv
     c3 = -c2
     c4 = -c1
 
@@ -226,8 +251,8 @@ def Bz_square_single(m, n, I, spacing, cp, max_side):
     r3 = np.sqrt(c3 ** 2 + d3 ** 2 + zv ** 2)
     r4 = np.sqrt(c4 ** 2 + d4 ** 2 + zv ** 2)
 
-    Bz_square = C * (-c2 / (r2 * (r2 + d2)) + d2 / (r2 * (r2 - c2)) - c1 / (r1 * (r1 + d1)) - d1 / (r1 * (r1 + c1)) -
-                     c4 / (r4 * (r4 + d4)) + d4 / (r4 * (r4 - c4)) - c3 / (r3 * (r3 + d3)) - d3 / (r3 * (r3 + c3)))
+    Bz_square = C * ((-d1 / (r1*(r1 + c1)) - c1 / (r1*(r1 + d1))) + (d2 / (r2*(r2 - c2)) - c2 / (r2*(r2 + d2))) +
+                     (-d3 / (r3*(r3 + c3)) - c3 / (r3*(r3+d3))) + (d4 / (r4*(r4-c4)) - c4 / (r4*(r4+d4))))
 
     return Bz_square
 
@@ -237,10 +262,12 @@ def Bz_square_contour(R, X_side, Y_side, I, spacing, cp):
     Calculates the Bz field for a square contour
     ---------------
     """
+    I = np.sqrt(2) * I
     max_side = max([X_side, Y_side])
     X_sides, Y_sides = Radii_in_sides_square(R, X_side, Y_side)
 
     Bz_square_contour = np.zeros([cp, cp, cp])
+
 
     for x, y in zip(X_sides, Y_sides):
         Bz_square_contour += Bz_square_single(x, y, I, spacing, cp, max_side)

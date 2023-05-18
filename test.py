@@ -1,2 +1,2 @@
 import os
-os.system('cmd /c "streamlit run main.py"')
+os.system('cmd /c "streamlit run website.py"')
