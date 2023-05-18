@@ -7,7 +7,7 @@ import sys
 import math
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
+import see_on_arrays as np
 
 import Field_functions as ff
 

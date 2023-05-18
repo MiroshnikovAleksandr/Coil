@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from DEAP_Field_refactored import Genetic
 import tomli
-import numpy as np
+import see_on_arrays as np
 import scienceplots
 
 n = 2  # number of points in each data array

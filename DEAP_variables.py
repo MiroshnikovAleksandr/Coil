@@ -6,7 +6,7 @@ import random
 import sys
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
+import see_on_arrays as np
 
 import Field_functions as ff
 import DEAP_Field_newnew as DF

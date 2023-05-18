@@ -5,7 +5,7 @@ from deap import tools
 import random
 import sys
 import matplotlib.pyplot as plt
-import numpy as np
+import see_on_arrays as np
 
 import Field_functions as ff
 #plt.style.use(['science', 'ieee'])

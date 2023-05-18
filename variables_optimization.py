@@ -1,4 +1,4 @@
-import numpy as np
+import see_on_arrays as np
 from scipy.optimize import minimize, Bounds
 import DEAP_Field_newnew as DF
 
