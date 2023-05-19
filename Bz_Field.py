@@ -11,9 +11,9 @@ def transposition(xv, yv, zv):
     zv_T = np.zeros((cp, cp, cp))
 
     for i in range(cp):
-        xv_T[i] = xv[:, :, i].T
-        yv_T[i] = yv[:, :, i].T
-        zv_T[i] = zv[:, :, i].T
+        xv_T[:, :, i] = xv[:, :, i].T
+        yv_T[:, :, i] = yv[:, :, i].T
+        zv_T[:, :, i] = zv[:, :, i].T
 
     return xv_T, yv_T, zv_T
 
@@ -96,8 +96,8 @@ def Bz_segment(start_point, end_point, g, I, spacing, cp):
         gamma = yv - (k*xv + b)
         delta = zv**2 + (gamma / alpha)**2
 
-        Bz_segment_1 = C * (abs(x1 - betta) * gamma) / (delta * np.sqrt((alpha * (x1 - betta))**2 + delta))
-        Bz_segment_2 = C * (abs(x2 - betta) * gamma) / (delta * np.sqrt((alpha * (x2 - betta))**2 + delta))
+        Bz_segment_1 = C * ((x1 - betta) * gamma) / (delta * np.sqrt((alpha * (x1 - betta))**2 + delta))
+        Bz_segment_2 = C * ((x2 - betta) * gamma) / (delta * np.sqrt((alpha * (x2 - betta))**2 + delta))
 
         return Bz_segment_2 - Bz_segment_1
 
@@ -105,8 +105,8 @@ def Bz_segment(start_point, end_point, g, I, spacing, cp):
 
         alpha = zv**2 + (x1 - xv)**2
 
-        Bz_segment_1 = C * ((x1 - xv) * abs(y1 - yv)) / (alpha * np.sqrt((y1 - yv)**2 + alpha))
-        Bz_segment_2 = C * ((x1 - xv) * abs(y2 - yv)) / (alpha * np.sqrt((y2 - yv)**2 + alpha))
+        Bz_segment_1 = C * ((x1 - xv) * (y1 - yv)) / (alpha * np.sqrt((y1 - yv)**2 + alpha))
+        Bz_segment_2 = C * ((x1 - xv) * (y2 - yv)) / (alpha * np.sqrt((y2 - yv)**2 + alpha))
 
         return Bz_segment_2 - Bz_segment_1
 
@@ -114,8 +114,8 @@ def Bz_segment(start_point, end_point, g, I, spacing, cp):
 
         alpha = zv ** 2 + (y1 - yv) ** 2
 
-        Bz_segment_1 = C * ((yv - y1) * abs(x1 - xv)) / (alpha * np.sqrt((x1 - xv) ** 2 + alpha))
-        Bz_segment_2 = C * ((yv - y1) * abs(x2 - xv)) / (alpha * np.sqrt((x2 - xv) ** 2 + alpha))
+        Bz_segment_1 = C * ((yv - y1) * (x1 - xv)) / (alpha * np.sqrt((x1 - xv) ** 2 + alpha))
+        Bz_segment_2 = C * ((yv - y1) * (x2 - xv)) / (alpha * np.sqrt((x2 - xv) ** 2 + alpha))
 
         return Bz_segment_2 - Bz_segment_1
 
@@ -137,6 +137,7 @@ def Bz_piecewise_linear_contour_single(coords,  I, spacing, cp, g, direction):
         I = -I
 
     Bz_piecewise_linear_contour_single = np.zeros((cp, cp, cp))
+
     for i in range(len(coords) - 1):
         Bz_piecewise_linear_contour_single += Bz_segment(coords[i], coords[i + 1], g, I, spacing, cp)
 
