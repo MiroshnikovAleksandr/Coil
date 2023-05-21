@@ -11,7 +11,7 @@ R = [1]
 coords = [[-0.5, -0.866025], [-1, 0], [-0.5, 0.866025], [0.5, 0.866025], [1, 0], [0.5, -0.866025]]
 # coords = [[-1.5, -np.sqrt(3)/2], [0, np.sqrt(3)], [1.5, -np.sqrt(3)/2]]
 # coords = [[0, -0.866025], [-0.5, 0], [0, 0.866025], [0.5, 0]]
-# coords = [[0.05, -0.05], [-0.05, -0.05], [-0.05, 0.05], [0.05, 0.05]]
+coords = [[0.05, -0.05], [-0.05, -0.05], [-0.05, 0.05], [0.05, 0.05]]
 # coords = [[-1, 7], [-1, 0], [-3, 0], [-3, -3], [0, -3], [0, -2], [1, -2], [1, -3], [4, -3], [4, 0], [2, 0], [2, 7]]
 # coords = [[-1, 7], [-1, 0], [-3, 0], [-3, -3], [4, -3], [4, 0], [2, 0], [2, 7]]
 # coords = [[-0.05, -0.15], [-0.05, 0.15], [0.05, 0.15], [0.05, -0.15]]
@@ -29,8 +29,8 @@ height = 0.015
 X_side = 0.1
 Y_side = 0.3
 material, l, d, nu = 'Copper', 0.4, 0.125e-3, 1e9
-Bz_piecewise = Bz_Field.Bz_piecewise_linear_contour_single(coords, I, spacing, cp, g, False)
-# # print(Bz_piecewise[16][16][16])
+Bz_piecewise = Bz_Field.Bz_piecewise_linear_contour_single(coords, I, spacing, cp, False)
+# print(Bz_piecewise[16][16][16])
 # Plot.plot_2d(Bz_piecewise, height, g, spacing, cp)
 Plot.plot_3d(Bz_piecewise, height, g, spacing, cp)
 plt.show()
