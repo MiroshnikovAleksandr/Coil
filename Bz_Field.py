@@ -4,6 +4,10 @@ from scipy.special import ellipk,ellipkm1, ellipe
 
 
 def transposition(xv, yv, zv):
+    """
+    Transposes a three-dimensional array at a fixed third index
+    ---------------
+    """
     cp = len(xv)
 
     xv_T = np.zeros((cp, cp, cp))
@@ -26,7 +30,7 @@ def prop_coeff(R):
     R.sort()
     R.reverse()
     prop = []
-    for i in range(len(R)-1):
+    for i in range(len(R)):
         prop.append(R[i]/max(R))
 
     return prop
@@ -37,8 +41,8 @@ def Radii_in_sides_square(R, X_side, Y_side):
     Converts radii to sides of a rectangular coil
     ---------------
     """
-    prop = prop_coeff(R)
-    X_sides, Y_sides = [X_side], [Y_side]
+    prop = prop_coeff(R=R)
+    X_sides, Y_sides = [], []
     for k in prop:
         X_sides.append(X_side * k)
         Y_sides.append(Y_side * k)
@@ -51,8 +55,8 @@ def Radii_in_coords(R, coords_max):
     Converts radii to vertex coordinates of a piecewise linear coil
     ---------------
     """
-    prop = prop_coeff(R)
-    list_of_coords = [coords_max]
+    prop = prop_coeff(R=R)
+    list_of_coords = []
     for k in prop:
         new_coords = []
         for point in coords_max:
@@ -61,16 +65,15 @@ def Radii_in_coords(R, coords_max):
     return list_of_coords
 
 
-def Bz_segment(start_point, end_point, g, I, spacing, cp):
+def Bz_segment(start_point, end_point, I, cp, calc_radius):
     """
     Calculates z-component of B field of single-segment
     ---------------
     @param start_point: The beginning of the segment
     @param end_point: The end of the segment
-    @param g: Length of the largest segment
     @param I: Current in the contour
-    @param spacing: Spacing between coil and the calculation domain boundary
     @param cp: Calculation domain points
+    @param calc_radius: Calculation domain length
     @return: Z-component of B field of single-segment
     """
     x1, y1 = start_point[0], start_point[1]
@@ -78,11 +81,10 @@ def Bz_segment(start_point, end_point, g, I, spacing, cp):
     mu0 = np.pi * 4e-7
     C = mu0 * I / (4 * np.pi)
 
-    calc_radius = g * spacing
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)
 
-    xv, yv, zv = transposition(xv, yv, zv)
+    # xv, yv, zv = transposition(xv, yv, zv)
 
     if x1 != x2 and y1 != y2:
 
@@ -117,37 +119,40 @@ def Bz_segment(start_point, end_point, g, I, spacing, cp):
 
         return Bz_segment_2 - Bz_segment_1
 
-def Bz_piecewise_linear_contour_single(coords,  I, spacing, cp, g, direction):
+def Bz_piecewise_linear_contour_single(coords,  I, cp, calc_radius):
     """
     Calculates Bz field of piecewise linear coil
     ---------------
     @param coords: Coordinates of the contour corners
     @param I: Current in the contour
-    @param spacing: Spacing between coil and the calculation domain boundary
     @param cp: Calculation domain points
-    @param direction: The direction of the current along the contour. If the current flows clockwise, then by default this value is True
+    @param calc_radius: Calculation domain length
     @return: Z-component B of the field of single coil
     """
-    if not direction:
-        I = -I
-
-    I = np.sqrt(2)*I
 
     Bz_piecewise_linear_contour_single = np.zeros((cp, cp, cp))
     for i in range(len(coords)):
         try:
-            Bz_piecewise_linear_contour_single += Bz_segment(coords[i], coords[i + 1], g, I, spacing, cp)
+            Bz_piecewise_linear_contour_single += Bz_segment(start_point=coords[i],
+                                                             end_point=coords[i + 1],
+                                                             I=I,
+                                                             cp=cp,
+                                                             calc_radius=calc_radius)
         except IndexError:
-            Bz_piecewise_linear_contour_single += Bz_segment(coords[i], coords[0], g, I, spacing, cp)
+            Bz_piecewise_linear_contour_single += Bz_segment(start_point=coords[i],
+                                                             end_point=coords[0],
+                                                             I=I,
+                                                             cp=cp,
+                                                             calc_radius=calc_radius)
 
     return Bz_piecewise_linear_contour_single
 
 
-def Bz_piecewise_linear_contour(R, coords,  I, spacing, cp, direction=True):
+def Bz_piecewise_linear_contour(R, coords,  I, spacing, cp, direction=False):
     """
     Calculates the Bz field for a piecewise linear contour
     ---------------
-    @param R: Set of radii
+    @param R: Array of radii
     @param coords: Coordinates of the largest turn
     @param I: Current in the contour
     @param spacing: Spacing between coil and the calculation domain boundary
@@ -155,34 +160,41 @@ def Bz_piecewise_linear_contour(R, coords,  I, spacing, cp, direction=True):
     @param direction: The direction of the current along the contour. If the current flows clockwise, then by default this value is True
     @return: Z-component B of the field of a piecewise linear contour
     """
+    if not direction:
+        I = -I
+
+    I = np.sqrt(2)*I
+
     list_of_coords = Radii_in_coords(R, coords)
 
     l = []
     for i in range(len(coords)):
         l.append(np.sqrt((coords[i][0])**2 + (coords[i][1])**2))
 
-    g = np.amax(l)
+    calc_radius = np.amax(l) * spacing
 
     Bz_piecewise_linear_contour = np.zeros([cp, cp, cp])
 
     for coil in list_of_coords:
-        Bz_piecewise_linear_contour += Bz_piecewise_linear_contour_single(coil, I, spacing, cp, g, direction)
+        Bz_piecewise_linear_contour += Bz_piecewise_linear_contour_single(coords=coil,
+                                                                          I=I,
+                                                                          cp=cp,
+                                                                          calc_radius=calc_radius)
 
     return Bz_piecewise_linear_contour
 
 
-def Bz_circular_single(r_max, a, I, spacing, cp):
+def Bz_circular_single(a, I, cp, calc_radius):
     """
     Calculates the Bz field of a single circular coil
     ---------------
     @param a: Turn radius
     @param I: Current in the contour
-    @param spacing: Spacing between coil and the calculation domain boundary
     @param cp: Calculation domain points
+    @param calc_radius: Calculation domain length
     @return: Z-component B of the field of a single circular coil
     """
     mu0 = np.pi * 4e-7
-    calc_radius = r_max * spacing  # Calculation domain length
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)  # Creating meshgrid
 
@@ -202,31 +214,39 @@ def Bz_circular_contour(R, I, spacing, cp):
     """
     Calculates the Bz field for a circular contour
     ---------------
+    @param R: Array of radii
+    @param I: Current in the contour
+    @param spacing: Spacing between coil and the calculation domain boundary
+    @param cp: Calculation domain points
+    @return: Z-component B of the field of a circular contour
     """
     Bz_circular_contour = np.zeros([cp, cp, cp])
 
+    calc_radius = max(R) * spacing
+
     for r in R:
-        Bz_circular_contour += Bz_circular_single(max(R), r, I, spacing, cp)
-
-
+        Bz_circular_contour += Bz_circular_single(a=r,
+                                                  I=I,
+                                                  cp=cp,
+                                                  calc_radius=calc_radius)
     return Bz_circular_contour
 
 
-def Bz_square_single(m, n, I, spacing, cp):
+def Bz_square_single(m, n, I, cp, calc_radius):
     """
     Calculates the Bz field of a single square coil
     ---------------
     @param m: Side parallel to the x-axis
     @param n: Side parallel to the y-axis
     @param I: Current in the contour
-    @param spacing: Spacing between coil and the calculation domain boundary
     @param cp: Calculation domain points
+    @param calc_radius: Calculation domain length
     @return: Z-component B of the field of single coil
     """
     mu0 = np.pi * 4e-7
-    calc_radius = np.amax([m, n]) * spacing  # Calculation domain length
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)  # Creating meshgrid
+    # xv, yv, zv = transposition(xv, yv, zv)
 
     C = mu0 * I / (4 * np.pi)
 
@@ -255,12 +275,24 @@ def Bz_square_contour(R, X_side, Y_side, I, spacing, cp):
     """
     Calculates the Bz field for a square contour
     ---------------
+    @param R: Array of radii
+    @param X_side: The largest side parallel to the x-axis
+    @param Y_side: The largest side parallel to the y-axis
+    @param I: Current in the contour
+    @param spacing: Spacing between coil and the calculation domain boundary
+    @param cp: Calculation domain points
     """
     X_sides, Y_sides = Radii_in_sides_square(R, X_side, Y_side)
 
     Bz_square_contour = np.zeros([cp, cp, cp])
 
+    calc_radius = 0.5 * max([X_side, Y_side]) * spacing
+
     for x, y in zip(X_sides, Y_sides):
-        Bz_square_contour += Bz_square_single(x, y, I, spacing, cp)
+        Bz_square_contour += Bz_square_single(m=x,
+                                              n=y,
+                                              I=I,
+                                              cp=cp,
+                                              calc_radius=calc_radius)
 
     return Bz_square_contour

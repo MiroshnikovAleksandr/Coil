@@ -28,7 +28,7 @@ def plot_3d(Bz, height, a_max, spacing, cp):
     calc_radius = a_max * spacing  # Calculation domain length
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)  # Creating meshgrid
-    xv, yv, zv = transposition(xv, yv, zv)
+    # xv, yv, zv = transposition(xv, yv, zv)
     view_line = height / (2 * calc_radius / np.size(x)) + np.size(x) / 2
     view_line = int(view_line)
     fig = plt.figure()

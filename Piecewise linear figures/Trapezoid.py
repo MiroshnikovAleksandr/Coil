@@ -1,8 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import Bz_Field_piecewise
-import COV_piecewise
-import Plot_piecewise
+import Bz_Field
+import COV
+import Plot
 
 R = [1]
 coords = [[-4, -2], [-2, 1], [2, 1], [4, -2]]
@@ -18,12 +18,12 @@ for i in range(len(coords)):
 
 g = max(l)
 
-Bz_piecewise = Bz_Field_piecewise.Bz_piecewise_linear_contour_single(coords, I, spacing, cp, False)
-Plot_piecewise.plot_3d(Bz_piecewise, height, g, spacing, cp)
+Bz_piecewise = Bz_Field.Bz_piecewise_linear_contour(R, coords, I, spacing, cp)
+Plot.plot_3d(Bz_piecewise, height, g, spacing, cp)
 plt.show()
-Plot_piecewise.plot_2d(Bz_piecewise, height, g, spacing, cp)
+Plot.plot_2d(Bz_piecewise, height, g, spacing, cp)
 plt.show()
-Plot_piecewise.plot_piecewise_linear_coil(coords, spacing, R)
+Plot.plot_piecewise_linear_coil(coords, spacing, R)
 plt.show()
-COV = COV_piecewise.COV_piecewise_linear(Bz_piecewise, coords, height, spacing, P)
+COV = COV.COV_piecewise_linear(Bz_piecewise, coords, height, spacing, P)
 print(round(COV*100, 1), '%')
