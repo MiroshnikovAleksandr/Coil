@@ -9,8 +9,8 @@ coords = [[0, -0.866025], [-0.5, 0], [0, 0.866025], [0.5, 0]]
 I = 1
 P = 0.9
 spacing = 1.5
-cp = 50
-height = 0.015
+cp = 100
+height = 0.15
 
 l = []
 for i in range(len(coords)):

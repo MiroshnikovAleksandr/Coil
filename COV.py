@@ -55,7 +55,7 @@ def mask_square(tiles, cx, cy, X_side, Y_side):
     """
     for x in range(cx - X_side, cx + X_side + 1):
         for y in range(cy - Y_side, cy + Y_side + 1):
-            tiles[x][y] = 1
+            tiles[y][x] = 1
 
 
 
@@ -196,6 +196,143 @@ def mask_piecewise_linear(tiles, coords):
                 tiles[index_y + 1][x] = 0
 
 
+# def mask_piecewise_linear(tiles, coords):
+#     """
+#     Creates a piecewise linear binary mask
+#     --------------
+#     @param tiles: Zero two-dimensional array
+#     @param coords: Coordinate indexes
+#     @return: A piecewise linear mask
+#     """
+#     for i in range(len(coords)):
+#         try:
+#             x1, y1 = coords[i][0], coords[i][1]
+#             x2, y2 = coords[i + 1][0], coords[i + 1][1]
+#             X = []
+#             Y = []
+#             if y1 > y2:
+#                 for y in range(y2, y1 + 1):
+#                     Y.append(y)
+#             elif y1 <= y2:
+#                 for y in range(y1, y2 + 1):
+#                     Y.append(y)
+#             if x1 > x2:
+#                 for x in range(x2, x1 + 1):
+#                     X.append(x)
+#             elif x1 <= x2:
+#                 for x in range(x1, x2 + 1):
+#                     X.append(x)
+#             if len(X) == 1:
+#                 x = x1
+#                 for y in Y:
+#                     tiles[x][y] = 1
+#             elif len(Y) == 1:
+#                 y = y1
+#                 for x in X:
+#                     tiles[x][y] = 1
+#             else:
+#                 if len(X) > len(Y):
+#                     Y.clear()
+#                     k = (y2 - y1) / (x2 - x1)
+#                     b = y1 - k * x1
+#                     for x in X:
+#                         Y.append(round(k * x + b))
+#                 elif len(Y) > len(X):
+#                     X.clear()
+#                     k = (y2 - y1) / (x2 - x1)
+#                     b = y1 - k * x1
+#                     for y in Y:
+#                         X.append(round((y - b) / k))
+#                 for x, y in zip(X, Y):
+#                     tiles[x][y] = 1
+#             X.clear()
+#             Y.clear()
+#         except IndexError:
+#             x1, y1 = coords[i][0], coords[i][1]
+#             x2, y2 = coords[0][0], coords[0][1]
+#             X = []
+#             Y = []
+#             if y1 > y2:
+#                 for y in range(y2, y1 + 1):
+#                     Y.append(y)
+#             elif y1 <= y2:
+#                 for y in range(y1, y2 + 1):
+#                     Y.append(y)
+#             if x1 > x2:
+#                 for x in range(x2, x1 + 1):
+#                     X.append(x)
+#             elif x1 <= x2:
+#                 for x in range(x1, x2 + 1):
+#                     X.append(x)
+#             if len(X) == 1:
+#                 x = x1
+#                 for y in Y:
+#                     tiles[x][y] = 1
+#             elif len(Y) == 1:
+#                 y = y1
+#                 for x in X:
+#                     tiles[x][y] = 1
+#             else:
+#                 if len(X) > len(Y):
+#                     Y.clear()
+#                     k = (y2 - y1) / (x2 - x1)
+#                     b = y1 - k * x1
+#                     for x in X:
+#                         Y.append(round(k * x + b))
+#                 elif len(Y) > len(X):
+#                     X.clear()
+#                     k = (y2 - y1) / (x2 - x1)
+#                     b = y1 - k * x1
+#                     for y in Y:
+#                         X.append(round((y - b) / k))
+#                 for x, y in zip(X, Y):
+#                     tiles[x][y] = 1
+#             X.clear()
+#             Y.clear()
+#
+#     for y in range(len(tiles)):
+#         cut = tiles[:, y]
+#         indexes_contour, indexes_vertexes, indexes_rib = [], [], []
+#         for x in range(len(cut) - 1):
+#             if cut[x] == 1:
+#                 indexes_contour.append(x)
+#                 if ([x, y] in coords) and (cut[x + 1] != 1) and (cut[x - 1] != 1):
+#                     index = index_of_element(coords, [x, y])
+#                     if (index < len(coords) - 1) and (index > 0):
+#                         if ((y < coords[index + 1][1]) and (y < coords[index - 1][1])) or (
+#                                 (y > coords[index + 1][1]) and (y > coords[index - 1][1])):
+#                             indexes_vertexes.append(x)
+#                     else:
+#                         if ((y < coords[0][1]) and (y < coords[len(coords) - 1][1])) or (
+#                                 (y > coords[0][1]) and (y > coords[len(coords) - 1][1])):
+#                             indexes_vertexes.append(x)
+#                 elif ([x, y] in coords) and (cut[x + 1] == 1):
+#                     last_one = x + 1 + if_one(cut[x + 1:])
+#                     for i in range(x, last_one):
+#                         indexes_rib.append(i)
+#         for element in indexes_vertexes:
+#             indexes_contour.remove(element)
+#         for element in indexes_rib:
+#             indexes_contour.remove(element)
+#
+#         for index in range(0, len(indexes_contour) - 1, 2):
+#             for x in range(indexes_contour[index] + 1, indexes_contour[index + 1]):
+#                 tiles[x][y] = 1
+#         indexes_contour.clear()
+#         indexes_vertexes.clear()
+#         indexes_rib.clear()
+#
+#     for x in range(len(tiles - 1)):
+#         cut = tiles[x, :]
+#
+#         for index_y in range(len(cut) - 2):
+#             if cut[index_y] == 1 and cut[index_y + 1] == 0 and cut[index_y + 2] == 1:
+#                 tiles[x][index_y + 1] = 1
+#             elif cut[index_y] == 0 and cut[index_y + 1] == 1 and cut[index_y + 2] == 0 and (
+#                     [x, index_y + 1] not in coords):
+#                 tiles[x][index_y + 1] = 0
+
+
 def COV_circle(Bz, max_coil_r, height, spacing, P):
     """
     Calculates the coefficient of variation for a circular coil
@@ -283,6 +420,7 @@ def COV_piecewise_linear(Bz, coords, height, spacing, P):
 
     calc_radius = max(l) * spacing
     cell_size = 2 * calc_radius / cp
+
     view_plane = int(height / cell_size + cp / 2)
     tiles = np.zeros((cp, cp))
 

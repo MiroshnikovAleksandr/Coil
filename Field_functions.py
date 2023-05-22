@@ -7,7 +7,7 @@ Created on Sat Dec 11 12:28:30 2021
 Functions for magnetic field calculation
 """
 
-import see_on_arrays as np
+import numpy as np
 import math
 import matplotlib.pyplot as plt
 from scipy.special import ellipk,ellipkm1, ellipe

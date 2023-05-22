@@ -4,7 +4,7 @@ import Bz_Field
 import COV
 import Plot
 
-R = [1]
+R = np.linspace(0.1,1,10)
 coords = [[-0.5, -0.866025], [-1, 0], [-0.5, 0.866025], [0.5, 0.866025], [1, 0], [0.5, -0.866025]]
 I = 1
 P = 0.9
@@ -19,8 +19,8 @@ for i in range(len(coords)):
 g = max(l)
 
 Bz_piecewise = Bz_Field.Bz_piecewise_linear_contour(R, coords, I, spacing, cp)
-# Plot.plot_3d(Bz_piecewise, height, g, spacing, cp)
-# plt.show()
+Plot.plot_3d(Bz_piecewise, height, g, spacing, cp)
+plt.show()
 # Plot.plot_2d(Bz_piecewise, height, g, spacing, cp)
 # plt.show()
 # Plot.plot_piecewise_linear_coil(coords, spacing, R)

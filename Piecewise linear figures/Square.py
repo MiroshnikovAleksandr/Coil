@@ -5,7 +5,7 @@ import COV
 import Plot
 
 R = [1]
-coords = [[0.5, -0.5], [-0.5, -0.5], [-0.5, 0.5], [0.5, 0.5]]
+coords = [[1, -1], [-1, -1], [-1, 1], [1, 1]]
 I = 1
 P = 0.9
 spacing = 1.5
@@ -19,11 +19,11 @@ for i in range(len(coords)):
 g = max(l)
 
 Bz_piecewise = Bz_Field.Bz_piecewise_linear_contour(R, coords, I, spacing, cp)
-Plot.plot_3d(Bz_piecewise, height, g, spacing, cp)
-plt.show()
+# Plot.plot_3d(Bz_piecewise, height, g, spacing, cp)
+# plt.show()
 Plot.plot_2d(Bz_piecewise, height, g, spacing, cp)
 plt.show()
-Plot.plot_piecewise_linear_coil(coords, spacing, R)
-plt.show()
+# Plot.plot_piecewise_linear_coil(coords, spacing, R)
+# plt.show()
 COV = COV.COV_piecewise_linear(Bz_piecewise, coords, height, spacing, P)
 print(round(COV*100, 1), '%')

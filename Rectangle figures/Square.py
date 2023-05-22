@@ -9,11 +9,11 @@ X_side = 2
 Y_side = 2
 I = 1
 P = 0.9
-spacing = 2
-cp = 100
-height = 0.1
+spacing = 1.5
+cp = 50
+height = 0.015
 
-g = 0.5 * max([X_side, Y_side])
+g = 0.5 * np.sqrt(X_side**2 + Y_side**2)
 
 Bz_square = Bz_Field.Bz_square_contour(R, X_side, Y_side, I, spacing, cp)
 

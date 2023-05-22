@@ -36,33 +36,56 @@ def prop_coeff(R):
     return prop
 
 
-def Radii_in_sides_square(R, X_side, Y_side):
+def Radii_in_sides_square(R, X_side, Y_side, split = False):
     """
     Converts radii to sides of a rectangular coil
     ---------------
     """
-    prop = prop_coeff(R=R)
-    X_sides, Y_sides = [], []
-    for k in prop:
-        X_sides.append(X_side * k)
-        Y_sides.append(Y_side * k)
+    if split:
+        split_sides = []
+        for coil in R:
+            prop = prop_coeff(coil)
+            sides = []
+            for k in prop:
+                sides.append([X_side*k, Y_side*k])
+            split_sides.append(sides)
+        return split_sides
+    else:
+        prop = prop_coeff(R=R)
+        X_sides, Y_sides = [], []
+        for k in prop:
+            X_sides.append(X_side * k)
+            Y_sides.append(Y_side * k)
 
-    return X_sides, Y_sides
+        return X_sides, Y_sides
 
 
-def Radii_in_coords(R, coords_max):
+def Radii_in_coords(R, coords_max, split=False):
     """
     Converts radii to vertex coordinates of a piecewise linear coil
     ---------------
     """
-    prop = prop_coeff(R=R)
-    list_of_coords = []
-    for k in prop:
-        new_coords = []
-        for point in coords_max:
-            new_coords.append([point[0] * k, point[1] * k])
-        list_of_coords.append(new_coords)
-    return list_of_coords
+    if split:
+        split_list_of_coords = []
+        for coil in R:
+            prop = prop_coeff(R=coil)
+            list_of_coords = []
+            for k in prop:
+                new_coords = []
+                for point in coords_max:
+                    new_coords.append([point[0] * k, point[1] * k])
+                list_of_coords.append(new_coords)
+            split_list_of_coords.append(list_of_coords)
+        return split_list_of_coords
+    else:
+        prop = prop_coeff(R=R)
+        list_of_coords = []
+        for k in prop:
+            new_coords = []
+            for point in coords_max:
+                new_coords.append([point[0] * k, point[1] * k])
+            list_of_coords.append(new_coords)
+        return list_of_coords
 
 
 def Bz_segment(start_point, end_point, I, cp, calc_radius):
