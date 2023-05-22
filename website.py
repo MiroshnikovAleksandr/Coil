@@ -3,8 +3,6 @@ import os
 import streamlit as st
 import pandas as pd
 import numpy as np
-
-import Bz_Field
 import Field_functions as ff
 import macros
 import tomli
@@ -27,7 +25,18 @@ probability_of_mutation = 0.0
 tournSel_k = 0.0
 CXPB = 0.0
 
-optimisation = False
+st.set_page_config(layout="wide")
+
+def changeSize(var, size):
+    if size == 'м' or size == 'А' or size == 'МГц':
+        return var
+    if size == 'см':
+        return var / 100
+    if size == 'мм':
+        return var / 1000
+    else:
+        return var
+
 
 with open('parameters.toml', 'rb') as toml:
     parameters = tomli.load(toml)
@@ -40,22 +49,38 @@ with st.sidebar:
     form = st.radio("Форма катушки", ['круглая', 'прямоугольная', 'кусочно-линейная'])
     st.header("Геометрически параметры")
     h = 0
+    variable, size = st.columns([3, 1])
+
     if form == 'круглая':
-        radius = st.number_input('Радиус, м', value=parameters['geom']['a_max'])
-        min_radius = st.number_input('Минимальный радиус, м', value=parameters['geom']['a_min'])
-        h = st.number_input('Высота, м', value=parameters['geom']['height'])
+        with variable:
+            radius = st.number_input('Радиус', value=parameters['geom']['a_max'])
+            min_radius = st.number_input('Минимальный радиус', value=parameters['geom']['a_min'])
+            h = st.number_input('Высота', value=parameters['geom']['height'])
+        with size:
+            size_r = st.selectbox("", ('м', 'см', 'мм'))
+            size_min = st.selectbox(" ", ('м', 'см', 'мм'))
+            size_h = st.selectbox("  ", ('м', 'см', 'мм'))
 
-        # if not optimisation:
-        #     n = st.number_input('Количество витков')
     if form == 'прямоугольная':
-        length = st.number_input('Длина, м', value=parameters['geom']['X_side'])
-        width = st.number_input('Ширина, м', value=parameters['geom']['Y_side'])
-        h = st.number_input('Высота, м', value=parameters['geom']['height'])
-    if form == 'кусочно-линейная':
-        h = st.number_input('Высота, м', value=parameters['geom']['height'])
-        n = st.number_input('Количество точек', value=start_n)
-        col1, col2 = st.columns(2)
+        with variable:
+            length = st.number_input('Длина, м', value=parameters['geom']['X_side'])
+            width = st.number_input('Ширина, м', value=parameters['geom']['Y_side'])
+            h = st.number_input('Высота, м', value=parameters['geom']['height'])
+        with size:
+            size_l = st.selectbox("", ('м', 'см', 'мм'))
+            size_w = st.selectbox(" ", ('м', 'см', 'мм'))
+            size_h = st.selectbox("  ", ('м', 'см', 'мм'))
 
+    if form == 'кусочно-линейная':
+        variable, size = st.columns([3, 1])
+        with variable:
+            h = st.number_input('Высота, м', value=parameters['geom']['height'])
+        with size:
+            size_h = st.selectbox("  ", ('м', 'см', 'мм'))
+
+        n = st.number_input('Количество точек', value=start_n)
+
+        col1, col2 = st.columns(2)
         x = [0] * n
         y = [0] * n
 
@@ -64,15 +89,14 @@ with st.sidebar:
             for i in range(start_n, n):
                 cord[i] = [0, 0]
 
-        with st.sidebar:
-            with col1:
-                st.header("x")
-                for i in range(0, n):
-                    x[i] = st.number_input("x" + str(i), value=cord[i][0])
-            with col2:
-                st.header("y")
-                for i in range(0, n):
-                    y[i] = st.number_input("y" + str(i), value=cord[i][1])
+        with col1:
+            st.header("x, м")
+            for i in range(0, n):
+                x[i] = st.number_input("x" + str(i), value=cord[i][0])
+        with col2:
+            st.header("y, м")
+            for i in range(0, n):
+                y[i] = st.number_input("y" + str(i), value=cord[i][1])
 
         cord = [0] * n
         for i in range(0, n):
@@ -80,10 +104,12 @@ with st.sidebar:
 
     st.header("Электрические параметры")
 
-    frequency = st.number_input('Частота, [МГц]', value=(parameters['geom']['freq'] / (10 ** 6)))
-    I = st.number_input('Сила тока [A]', value=parameters['geom']['I'])
-
-    # optimisation = st.checkbox('Оптимизация витков')  # deao-fiel new approach'
+    with variable:
+        frequency = st.number_input('Частота, [МГц]', value=(parameters['geom']['freq'] / (10 ** 6)))
+        I = st.number_input('Сила тока [A]', value=parameters['geom']['I'])
+    with size:
+        size_freq = st.selectbox('    ', ('МГц', ' '))
+        size_I = st.selectbox('      ', ('А', ' '))
 
     with st.expander("Параметры генетического алгоритма"):
         max_of_generation = st.number_input("Максимально количество поколений",
@@ -95,23 +121,31 @@ with st.sidebar:
         tournSel_k = st.number_input("Количество особей, участвующих в соревновании для скрещивания",
                                      value=parameters['gen']['tournSel_k'])
         CXPB = st.number_input("вероятность скрещивания", value=parameters['gen']['CXPB'])
+
     do = st.button('Посчитать')
 
 if do:
     if frequency > 0.0:
+        frequency = changeSize(frequency, size_freq)
         parameters['geom']['freq'] = frequency * (10 ** 6)
     if I > 0.0:
+        I = changeSize(I, size_I)
         parameters['geom']['I'] = I
     if radius > 0.0:
+        radius = changeSize(radius, size_r)
         parameters['geom']['a_max'] = radius
     if min_radius > 0.0:
+        min_radius = changeSize(min_radius, size_min)
         parameters['geom']['a_min'] = min_radius
     if length > 0.0:
+        length = changeSize(length, size_l)
         parameters['geom']['X_side'] = length
     if width > 0.0:
+        width = changeSize(width, size_w)
         parameters['geom']['Y_side'] = width
     if h > 0.0:
-        parameters['geom']['height']
+        h = changeSize(h, size)
+        parameters['geom']['height'] = h
     if form == 'круглая':
         parameters['geom']['figure'] = 'Circular'
     elif form == 'прямоугольная':
@@ -168,19 +202,22 @@ if do:
         field_pic_3d = Plot.plot_3d(Bz=Magnetic_field,
                                     height=GA.height, a_max=calc_radius,
                                     spacing=GA.spacing, cp=GA.cp)
-        # macros = macros.(radii_array)
+    # macros = macros.(radii_array)
 
     resistance = Resistance.resistance_contour(l=lengths, material=GA.material, d=GA.minimal_gap, nu=GA.freq)
+    col1, col2 = st.columns([3, 2])
+    with col1:
+        st.download_button(label="Download a CST macros for your coil",
+                           file_name="macros.mcs", data=macros, mime="text/mcs")
+        st.write(f'The COV if the magnetic field generated by your coil is {100 * final_COV:.0f}%.')
+        st.write(f'These are the proportion coefficients (radii):')
+        st.write(radii_array)
+        st.write(f'This is the resistance of your coil (Ohm):')
+        st.write(resistance)
+        st.write(f'This is the total length of your coil (m):')
+        st.write(length)
 
-    # st.download_button(label="Download a CST macros for your coil",
-    #                    file_name="macros.mcs", data=macros, mime="text/mcs")
-    st.write(f'The COV if the magnetic field generated by your coil is {100 * final_COV:.0f}%.')
-    st.write(f'These are the proportion coefficients (radii):')
-    st.write(radii_array)
-    st.write(f'This is the resistance of your coil (Ohm):')
-    st.write(resistance)
-    st.write(f'This is the total length of your coil (m):')
-    st.write(length)
-    st.pyplot(coil_pic, dpi=1000)
-    # st.pyplot(field_pic_2d, dpi=1000)
-    st.pyplot(field_pic_3d, dpi=1000)
+    with col2:
+        st.pyplot(coil_pic, dpi=1000)
+        # st.pyplot(field_pic_2d, dpi=1000)
+        st.pyplot(field_pic_3d, dpi=1000)

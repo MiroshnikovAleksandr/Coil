@@ -38,9 +38,8 @@ def Radii_in_sides_square(R, X_side, Y_side):
     Converts radii to sides of a rectangular coil
     ---------------
     """
-    prop = prop_coeff(R)
-    X_sides, Y_sides = [X_side], [Y_side]
-    for k in prop:
+    X_sides, Y_sides = [], []
+    for k in R:
         X_sides.append(X_side * k)
         Y_sides.append(Y_side * k)
 
@@ -229,7 +228,7 @@ def Bz_circular_contour(R, I, spacing, cp):
     return Bz_circular_contour
 
 
-def Bz_square_single(m, n, I, spacing, cp, max_side):
+def Bz_square_single(max_m, max_n, m, n, I, spacing, cp):
     """
     Calculates the Bz field of a single square coil
     ---------------
@@ -242,7 +241,7 @@ def Bz_square_single(m, n, I, spacing, cp, max_side):
     @return: Z-component B of the field of single coil
     """
     mu0 = np.pi * 4e-7
-    calc_radius = max_side * spacing  # Calculation domain length
+    calc_radius = np.amax([max_m, max_n]) * spacing  # Calculation domain length
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)  # Creating meshgrid
     xv, yv, zv = transposition(xv, yv, zv)

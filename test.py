@@ -1,5 +1,16 @@
+# import Bz_Field
+# import Bz_Field as Bz
+# import Plot
+#
+# R = [0.5, 0.498, 0.496, 0.494, 0.492, 0.49, 0.488, 0.486, 0.47, 0.4405494276795005, 0.41216441207075954, 0.3848449531737773, 0.34672216441207077, 0.3216961498439126, 0.2552632674297607, 0.16893860561914673, 0.07995837669094694]
+#
+# bz = Bz_Field.Bz_square_contour(R, 2, 2, 1, 1.5, 30)
+# # Plot.plot_2d(bz, 0.015, max(R), 1.5, 30)
+# Plot.plot_3d(bz, 0.015, max(R), 1.5, 30)
 import os
 os.system('cmd /c "streamlit run website.py"')
+
+
 # from random import randint
 #
 # numbers = []
