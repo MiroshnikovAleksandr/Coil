@@ -3,13 +3,15 @@ import os
 import streamlit as st
 import pandas as pd
 import numpy as np
-import Field_functions as ff
 import macros
+import Field_functions as ff
 import tomli
 import Resistance
 from DEAP_Field_refactored import Genetic
 from turns_splitter import split
 import Plot
+import Bz_Field
+from Genetic_rect import GeneticRectangle
 
 radius = 0.0
 min_radius = 0.0
@@ -26,6 +28,7 @@ tournSel_k = 0.0
 CXPB = 0.0
 
 st.set_page_config(layout="wide")
+
 
 def changeSize(var, size):
     if size == 'м' or size == 'А' or size == 'МГц':
@@ -165,6 +168,10 @@ if do:
 
     parameters['geom']['coords'] = cord
 
+    # if form == 'прямоугольная':
+    #     GA = GeneticRectangle(parameters)
+    # else:
+    #     GA = Genetic(parameters)
     GA = Genetic(parameters)
     GA.preparation()
     flat_radii_array = GA.execution()
@@ -182,25 +189,26 @@ if do:
                                     spacing=GA.spacing, cp=GA.cp)
         macros = macros.create_circular_macros(radii_array)
     elif GA.figure == 'Rectangle':
-        lengths = Resistance.length_square_coils(coils=Bz_Field.Radii_in_sides_square(flat_radii_array,
+        lengths = Resistance.length_square_coils(coils=Bz_Field.Radii_in_sides_square(radii_array,
                                                                                       X_side=GA.X_side,
-                                                                                      Y_side=GA.Y_side))
+                                                                                      Y_side=GA.Y_side,
+                                                                                      split=True))
         coil_pic = Plot.plot_square_coil(m_max=GA.X_side, n_max=GA.Y_side, spacing=GA.spacing, R=flat_radii_array)
         field_pic_3d = Plot.plot_3d(Bz=Magnetic_field,
-                                    height=GA.height, a_max=max(GA.X_side, GA.Y_side),
+                                    height=GA.height, a_max=0.5 * max(GA.X_side, GA.Y_side),
                                     spacing=GA.spacing, cp=GA.cp)
         macros = macros.create_rectangular_macros(radii_array)
     elif GA.figure == 'Piecewise':
         l = []
         for i in range(len(GA.coords)):
             l.append(np.sqrt((GA.coords[i][0]) ** 2 + (GA.coords[i][1]) ** 2))
-        calc_radius = max(l) * GA.spacing
 
-        lengths = Resistance.length_piecewise_linear_coils(coils=Bz_Field.Radii_in_coords(flat_radii_array,
-                                                                                          coords_max=GA.coords))
+        lengths = Resistance.length_piecewise_linear_coils(coils=Bz_Field.Radii_in_coords(radii_array,
+                                                                                          coords_max=GA.coords,
+                                                                                          split=True))
         coil_pic = Plot.plot_piecewise_linear_coil(coords_max=GA.coords, spacing=GA.spacing, R=flat_radii_array)
         field_pic_3d = Plot.plot_3d(Bz=Magnetic_field,
-                                    height=GA.height, a_max=calc_radius,
+                                    height=GA.height, a_max=max(l),
                                     spacing=GA.spacing, cp=GA.cp)
     # macros = macros.(radii_array)
 

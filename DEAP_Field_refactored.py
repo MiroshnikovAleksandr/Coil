@@ -254,10 +254,10 @@ class Genetic:
         @param ind: creator.Individual
         @return: boolean
         """
-        if self.length(ind) > 100:
+        # if self.length(ind) > 100:
+        #     return False
+        if len(self.decode_all_x(ind)) < 5:
             return False
-        elif len(self.decode_all_x(ind)) < 5:
-            False
         else:
             return True
 
@@ -269,8 +269,8 @@ class Genetic:
         """
         # registering objective function with constraint
         toolbox.register("evaluate", self.objective_fxn)  # provide the objective function here
-        # toolbox.decorate("evaluate",
-        #                  tools.DeltaPenalty(self.check_feasibility, 1.5))  # constraint on the objective function
+        toolbox.decorate("evaluate",
+                         tools.DeltaPenalty(self.check_feasibility, 1.5))  # constraint on the objective function
 
         # registering basic processes using built-in functions in DEAP
         toolbox.register("select", tools.selTournament, tournsize=self.tournSel_k)  # selection strategy

@@ -140,10 +140,21 @@ class GeneticRectangle:
         p = random.random()
         if p <= 0.5:
             ind += [(i - (i - 1)) * random.randint(0, 1) for i in range(self.len_of_turn)]
-        else:
+        elif (p > 0.5) and (len(ind) > 70):
             del ind[len(ind) - self.len_of_turn::]
         ind = tools.mutFlipBit(ind, indpb=Indpb)
         return ind
+
+    def check_feasibility(self, ind):
+        """
+        Checks the feasibility of an individual: whether the length of the coil is adequate.
+        @param ind: creator.Individual
+        @return: boolean
+        """
+        if len(self.decode_all_x(ind)) < 5:
+            return False
+        else:
+            return True
 
     def execution(self):
         """
@@ -153,8 +164,8 @@ class GeneticRectangle:
         """
         # registering objective function with constraint
         toolbox.register("evaluate", self.objective_fxn)  # provide the objective function here
-        # toolbox.decorate("evaluate",
-        #                  tools.DeltaPenalty(self.check_feasibility, 1.5))  # constraint on the objective function
+        toolbox.decorate("evaluate",
+                         tools.DeltaPenalty(self.check_feasibility, 1.5))  # constraint on the objective function
 
         # registering basic processes using built-in functions in DEAP
         toolbox.register("select", tools.selTournament, tournsize=self.tournSel_k)  # selection strategy
@@ -190,9 +201,9 @@ class GeneticRectangle:
         print(self.decode_all_x(self.hall_of_fame[0]))
 
 
-GA = GeneticRectangle(parameters)
-# GA.decode_all_x([0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1])
-
-GA.preparation()
-GA.execution()
-GA.show()
+# GA = GeneticRectangle(parameters)
+# # GA.decode_all_x([0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1])
+#
+# GA.preparation()
+# GA.execution()
+# GA.show()

@@ -1,4 +1,5 @@
 import numpy as np
+from Bz_Field import Radii_in_sides_square, Radii_in_coords
 
 
 def Coil_resistance(material, l, d, nu):
@@ -45,7 +46,7 @@ def resistance_contour(l, material, d, nu):
     """
     Resistance_coil = []
     for i in l:
-        Resistance_coil.append(Coil_resistance(material, l, d, nu))
+        Resistance_coil.append(Coil_resistance(material, i, d, nu))
     return (np.sum(list(map(lambda x: x ** (-1), Resistance_coil)))) ** (-1)
 
 
@@ -73,7 +74,7 @@ def length_square_coils(coils):
     for coil in coils:
         lenght_coil = 0
         for i in coil:
-            lenght_coil += np.sum(i)
+            lenght_coil += 2 * np.sum(i)
         l.append(lenght_coil)
     return l
 
