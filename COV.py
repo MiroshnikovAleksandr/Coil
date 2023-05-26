@@ -204,21 +204,20 @@ def calculation_plane(cell_size, height, cp):
         return int(height / cell_size + cp / 2)
 
 
-def COV_circle(Bz, max_coil_r, height, spacing, P):
+def COV_circle(Bz, max_coil_r, height, P):
     """
     Calculates the coefficient of variation for a circular coil
     --------------
     @param Bz: Field for calculating the COV
     @param max_coil_r: The largest radius of a circular coil [m]
     @param height: Height above the coil [m]
-    @param spacing: Spacing between coil and the calculation domain boundary
     @param P: The boundary of the calculation of the COV
     @return: COV
     """
     cp = len(Bz)  # Calculation domain
 
-    calc_radius = max_coil_r * spacing  # Calculation domain length
-    cell_size = (2 * calc_radius) / cp
+    calc_radius = max_coil_r * P  # Calculation domain length
+    cell_size = (2 * calc_radius) / (cp - 1)
 
     view_plane = calculation_plane(cell_size=cell_size,
                                    height=height,
@@ -234,7 +233,7 @@ def COV_circle(Bz, max_coil_r, height, spacing, P):
     return COV
 
 
-def COV_square(Bz, X_side, Y_side, height, spacing, P):
+def COV_square(Bz, X_side, Y_side, height, P):
     """
     Calculates the coefficient of variation for a square coil
     ---------------
@@ -248,8 +247,8 @@ def COV_square(Bz, X_side, Y_side, height, spacing, P):
     """
     cp = len(Bz)
 
-    calc_radius = 0.5 * max([X_side, Y_side]) * spacing
-    cell_size = 2 * calc_radius / cp
+    calc_radius = 0.5 * max([X_side, Y_side]) * P
+    cell_size = 2 * calc_radius / (cp - 1)
     view_plane = calculation_plane(cell_size=cell_size,
                                    height=height,
                                    cp=cp)
@@ -270,7 +269,7 @@ def COV_square(Bz, X_side, Y_side, height, spacing, P):
     return COV
 
 
-def COV_piecewise_linear(Bz, coords, height, spacing, P):
+def COV_piecewise_linear(Bz, coords, height, P):
     """
     Calculates the coefficient of variation for a square coil
     ---------------
@@ -287,8 +286,8 @@ def COV_piecewise_linear(Bz, coords, height, spacing, P):
     for i in range(len(coords)):
         l.append(np.sqrt((coords[i][0]) ** 2 + (coords[i][1]) ** 2))
 
-    calc_radius = max(l) * spacing
-    cell_size = 2 * calc_radius / cp
+    calc_radius = max(l) * P
+    cell_size = 2 * calc_radius / (cp - 1)
 
     view_plane = calculation_plane(cell_size=cell_size,
                                    height=height,
@@ -296,8 +295,8 @@ def COV_piecewise_linear(Bz, coords, height, spacing, P):
     tiles = np.zeros((cp, cp))
 
     coords_COV = []
-    for i in coords:
-        coords_COV.append([round(cp // 2 + i[0] * P / cell_size), round(cp // 2 + i[1] * P / cell_size)])
+    for point in coords:
+        coords_COV.append([round(cp // 2 + point[0] * P / cell_size), round(cp // 2 + point[1] * P / cell_size)])
 
     mask_piecewise_linear(tiles, coords_COV)
     Bz_masked = np.multiply(tiles, Bz[:, :, view_plane])

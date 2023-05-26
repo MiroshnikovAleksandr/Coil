@@ -1,6 +1,7 @@
 import numpy as np
 import math
 from scipy.special import ellipk,ellipkm1, ellipe
+from COV import calculation_plane
 
 
 def prop_coeff(R):
@@ -69,7 +70,7 @@ def Radii_in_coords(R, coords_max, split=False):
         return list_of_coords
 
 
-def Bz_segment(start_point, end_point, I, cp, calc_radius):
+def Bz_segment(start_point, end_point, I, cp, calc_radius, view_plane):
     """
     Calculates z-component of B field of single-segment
     ---------------
@@ -78,6 +79,7 @@ def Bz_segment(start_point, end_point, I, cp, calc_radius):
     @param I: Current in the contour
     @param cp: Calculation domain points
     @param calc_radius: Calculation domain length
+    @param view_plane: Calculation plane
     @return: Z-component of B field of single-segment
     """
     x1, y1 = start_point[0], start_point[1]
@@ -94,9 +96,9 @@ def Bz_segment(start_point, end_point, I, cp, calc_radius):
         b = y2 - k*x2
 
         alpha = np.sqrt(k**2 + 1)
-        betta = (xv + k*yv - b*k) / (alpha**2)
-        gamma = yv - (k*xv + b)
-        delta = zv**2 + (gamma / alpha)**2
+        betta = (xv[:, :, view_plane] + k*yv[:, :, view_plane] - b*k) / (alpha**2)
+        gamma = yv[:, :, view_plane] - (k*xv[:, :, view_plane] + b)
+        delta = zv[:, :, view_plane]**2 + (gamma / alpha)**2
 
         Bz_segment_1 = C * ((x1 - betta) * gamma) / (delta * np.sqrt((alpha * (x1 - betta))**2 + delta))
         Bz_segment_2 = C * ((x2 - betta) * gamma) / (delta * np.sqrt((alpha * (x2 - betta))**2 + delta))
@@ -105,10 +107,10 @@ def Bz_segment(start_point, end_point, I, cp, calc_radius):
 
     elif x1 == x2 and y1 != y2:
 
-        alpha = zv**2 + (x1 - xv)**2
+        alpha = zv[:, :, view_plane]**2 + (x1 - xv[:, :, view_plane])**2
 
-        Bz_segment_1 = C * ((x1 - xv) * (y1 - yv)) / (alpha * np.sqrt((y1 - yv)**2 + alpha))
-        Bz_segment_2 = C * ((x1 - xv) * (y2 - yv)) / (alpha * np.sqrt((y2 - yv)**2 + alpha))
+        Bz_segment_1 = C * ((x1 - xv[:, :, view_plane]) * (y1 - yv[:, :, view_plane])) / (alpha * np.sqrt((y1 - yv[:, :, view_plane])**2 + alpha))
+        Bz_segment_2 = C * ((x1 - xv[:, :, view_plane]) * (y2 - yv[:, :, view_plane])) / (alpha * np.sqrt((y2 - yv[:, :, view_plane])**2 + alpha))
 
         return Bz_segment_2 - Bz_segment_1
 
@@ -116,12 +118,12 @@ def Bz_segment(start_point, end_point, I, cp, calc_radius):
 
         alpha = zv ** 2 + (y1 - yv) ** 2
 
-        Bz_segment_1 = C * ((yv - y1) * (x1 - xv)) / (alpha * np.sqrt((x1 - xv) ** 2 + alpha))
-        Bz_segment_2 = C * ((yv - y1) * (x2 - xv)) / (alpha * np.sqrt((x2 - xv) ** 2 + alpha))
+        Bz_segment_1 = C * ((yv[:, :, view_plane] - y1) * (x1 - xv[:, :, view_plane])) / (alpha * np.sqrt((x1 - xv[:, :, view_plane]) ** 2 + alpha))
+        Bz_segment_2 = C * ((yv[:, :, view_plane] - y1) * (x2 - xv[:, :, view_plane])) / (alpha * np.sqrt((x2 - xv[:, :, view_plane]) ** 2 + alpha))
 
         return Bz_segment_2 - Bz_segment_1
 
-def Bz_piecewise_linear_contour_single(coords,  I, cp, calc_radius):
+def Bz_piecewise_linear_contour_single(coords,  I, cp, calc_radius, view_plane):
     """
     Calculates Bz field of piecewise linear coil
     ---------------
@@ -129,6 +131,7 @@ def Bz_piecewise_linear_contour_single(coords,  I, cp, calc_radius):
     @param I: Current in the contour
     @param cp: Calculation domain points
     @param calc_radius: Calculation domain length
+    @param view_plane: Calculation plane
     @return: Z-component B of the field of single coil
     """
 
@@ -139,26 +142,29 @@ def Bz_piecewise_linear_contour_single(coords,  I, cp, calc_radius):
                                                              end_point=coords[i + 1],
                                                              I=I,
                                                              cp=cp,
-                                                             calc_radius=calc_radius)
+                                                             calc_radius=calc_radius,
+                                                             view_plane=view_plane)
         except IndexError:
             Bz_piecewise_linear_contour_single += Bz_segment(start_point=coords[i],
                                                              end_point=coords[0],
                                                              I=I,
                                                              cp=cp,
-                                                             calc_radius=calc_radius)
+                                                             calc_radius=calc_radius,
+                                                             view_plane=view_plane)
 
     return Bz_piecewise_linear_contour_single
 
 
-def Bz_piecewise_linear_contour(R, coords,  I, spacing, cp, direction=False):
+def Bz_piecewise_linear_contour(R, coords,  I, P, cp, height, direction=False):
     """
     Calculates the Bz field for a piecewise linear contour
     ---------------
     @param R: Array of radii
     @param coords: Coordinates of the largest turn
     @param I: Current in the contour
-    @param spacing: Spacing between coil and the calculation domain boundary
+    @param P: The boundary of the calculation of the COV
     @param cp: Calculation domain points
+    @param height: Height above the coil [m]
     @param direction: The direction of the current along the contour. If the current flows clockwise, then by default this value is True
     @return: Z-component B of the field of a piecewise linear contour
     """
@@ -171,7 +177,11 @@ def Bz_piecewise_linear_contour(R, coords,  I, spacing, cp, direction=False):
     for i in range(len(coords)):
         l.append(np.sqrt((coords[i][0])**2 + (coords[i][1])**2))
 
-    calc_radius = np.amax(l) * spacing
+    calc_radius = np.amax(l) * P
+    cell_size = 2 * calc_radius / (cp - 1)
+    view_plane = calculation_plane(cell_size=cell_size,
+                                   height=height,
+                                   cp=cp)
 
     Bz_piecewise_linear_contour = np.zeros((cp, cp, cp))
 
@@ -179,12 +189,13 @@ def Bz_piecewise_linear_contour(R, coords,  I, spacing, cp, direction=False):
         Bz_piecewise_linear_contour += Bz_piecewise_linear_contour_single(coords=coil,
                                                                           I=I,
                                                                           cp=cp,
-                                                                          calc_radius=calc_radius)
+                                                                          calc_radius=calc_radius,
+                                                                          view_plane=view_plane)
 
     return Bz_piecewise_linear_contour
 
 
-def Bz_circular_single(a, I, cp, calc_radius):
+def Bz_circular_single(a, I, cp, calc_radius, view_plane):
     """
     Calculates the Bz field of a single circular coil
     ---------------
@@ -192,14 +203,15 @@ def Bz_circular_single(a, I, cp, calc_radius):
     @param I: Current in the contour
     @param cp: Calculation domain points
     @param calc_radius: Calculation domain length
+    @param view_plane: Calculation plane
     @return: Z-component B of the field of a single circular coil
     """
     mu0 = np.pi * 4e-7
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)  # Creating meshgrid
 
-    ro = np.sqrt(xv ** 2 + yv ** 2)
-    r = np.sqrt(xv ** 2 + yv ** 2 + zv ** 2)
+    ro = np.sqrt(xv[:, :, view_plane] ** 2 + yv[:, :, view_plane] ** 2)
+    r = np.sqrt(xv[:, :, view_plane] ** 2 + yv[:, :, view_plane] ** 2 + zv[:, :, view_plane] ** 2)
     C = mu0 * I / np.pi
     alpha = np.sqrt(a ** 2 + r ** 2 - 2 * a * ro)
     beta = np.sqrt(a ** 2 + r ** 2 + 2 * a * ro)
@@ -210,29 +222,35 @@ def Bz_circular_single(a, I, cp, calc_radius):
     return Bz
 
 
-def Bz_circular_contour(R, I, spacing, cp):
+def Bz_circular_contour(R, I, P, cp, height):
     """
     Calculates the Bz field for a circular contour
     ---------------
     @param R: Array of radii
     @param I: Current in the contour
-    @param spacing: Spacing between coil and the calculation domain boundary
+    @param P: The boundary of the calculation of the COV
     @param cp: Calculation domain points
+    @param height: Height above the coil [m]
     @return: Z-component B of the field of a circular contour
     """
     Bz_circular_contour = np.zeros((cp, cp, cp))
 
-    calc_radius = max(R) * spacing
+    calc_radius = max(R) * P
+    cell_size = 2 * calc_radius / (cp -1)
+    view_plane = calculation_plane(cell_size=cell_size,
+                                   height=height,
+                                   cp=cp)
 
     for r in R:
         Bz_circular_contour += Bz_circular_single(a=r,
                                                   I=I,
                                                   cp=cp,
-                                                  calc_radius=calc_radius)
+                                                  calc_radius=calc_radius,
+                                                  view_plane=view_plane)
     return Bz_circular_contour
 
 
-def Bz_square_single(m, n, I, cp, calc_radius):
+def Bz_rectangle_single(m, n, I, cp, calc_radius, view_plane):
     """
     Calculates the Bz field of a single square coil
     ---------------
@@ -241,6 +259,7 @@ def Bz_square_single(m, n, I, cp, calc_radius):
     @param I: Current in the contour
     @param cp: Calculation domain points
     @param calc_radius: Calculation domain length
+    @param view_plane: Calculation plane
     @return: Z-component B of the field of single coil
     """
     mu0 = np.pi * 4e-7
@@ -249,28 +268,28 @@ def Bz_square_single(m, n, I, cp, calc_radius):
 
     C = mu0 * I / (4 * np.pi)
 
-    c1 = xv + m / 2
-    c2 = -xv + m / 2
+    c1 = xv[:, :, view_plane] + m / 2
+    c2 = -xv[:, :, view_plane] + m / 2
     c3 = -c2
     c4 = -c1
 
-    d1 = yv + n / 2
-    d2 = yv + n / 2
-    d3 = yv - n / 2
-    d4 = yv - n / 2
+    d1 = yv[:, :, view_plane] + n / 2
+    d2 = yv[:, :, view_plane] + n / 2
+    d3 = yv[:, :, view_plane] - n / 2
+    d4 = yv[:, :, view_plane] - n / 2
 
-    r1 = np.sqrt(c1 ** 2 + d1 ** 2 + zv ** 2)
-    r2 = np.sqrt(c2 ** 2 + d2 ** 2 + zv ** 2)
-    r3 = np.sqrt(c3 ** 2 + d3 ** 2 + zv ** 2)
-    r4 = np.sqrt(c4 ** 2 + d4 ** 2 + zv ** 2)
+    r1 = np.sqrt(c1 ** 2 + d1 ** 2 + zv[:, :, view_plane] ** 2)
+    r2 = np.sqrt(c2 ** 2 + d2 ** 2 + zv[:, :, view_plane] ** 2)
+    r3 = np.sqrt(c3 ** 2 + d3 ** 2 + zv[:, :, view_plane] ** 2)
+    r4 = np.sqrt(c4 ** 2 + d4 ** 2 + zv[:, :, view_plane] ** 2)
 
-    Bz_square = C * (-c2 / (r2 * (r2 + d2)) + d2 / (r2 * (r2 - c2)) - c1 / (r1 * (r1 + d1)) - d1 / (r1 * (r1 + c1)) -
+    Bz_rectangle = C * (-c2 / (r2 * (r2 + d2)) + d2 / (r2 * (r2 - c2)) - c1 / (r1 * (r1 + d1)) - d1 / (r1 * (r1 + c1)) -
                      c4 / (r4 * (r4 + d4)) + d4 / (r4 * (r4 - c4)) - c3 / (r3 * (r3 + d3)) - d3 / (r3 * (r3 + c3)))
 
-    return Bz_square
+    return Bz_rectangle
 
 
-def Bz_square_contour(R, X_side, Y_side, I, spacing, cp):
+def Bz_rectangle_contour(R, X_side, Y_side, I, P, cp, height):
     """
     Calculates the Bz field for a square contour
     ---------------
@@ -278,20 +297,27 @@ def Bz_square_contour(R, X_side, Y_side, I, spacing, cp):
     @param X_side: The largest side parallel to the x-axis
     @param Y_side: The largest side parallel to the y-axis
     @param I: Current in the contour
-    @param spacing: Spacing between coil and the calculation domain boundary
+    @param P: The boundary of the calculation of the COV
     @param cp: Calculation domain points
+    @param height: Height above the coil [m]
+    @return: Z-component B of the field of a rectangle contour
     """
     X_sides, Y_sides = Radii_in_sides_square(R, X_side, Y_side)
 
-    Bz_square_contour = np.zeros((cp, cp, cp))
+    Bz_rectangle_contour = np.zeros((cp, cp, cp))
 
-    calc_radius = 0.5 * max([X_side, Y_side]) * spacing
+    calc_radius = 0.5 * max([X_side, Y_side]) * P
+    cell_size = 2 * calc_radius / (cp - 1)
+    view_plane = calculation_plane(cell_size=cell_size,
+                                   height=height,
+                                   cp=cp)
 
     for x, y in zip(X_sides, Y_sides):
-        Bz_square_contour += Bz_square_single(m=x,
+        Bz_rectangle_contour += Bz_square_single(m=x,
                                               n=y,
                                               I=I,
                                               cp=cp,
-                                              calc_radius=calc_radius)
+                                              calc_radius=calc_radius,
+                                              view_plane=view_plane)
 
-    return Bz_square_contour
+    return Bz_rectangle_contour
