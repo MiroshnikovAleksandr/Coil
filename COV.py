@@ -220,7 +220,9 @@ def COV_circle(Bz, max_coil_r, height, spacing, P):
     calc_radius = max_coil_r * spacing  # Calculation domain length
     cell_size = (2 * calc_radius) / cp
 
-    view_plane = int(height / cell_size + len(Bz) / 2)
+    view_plane = calculation_plane(cell_size=cell_size,
+                                   height=height,
+                                   cp=cp)
 
     tiles = np.zeros((cp, cp))
     r_cov = round(max_coil_r * P / cell_size)  # Uniform area in cells
@@ -288,7 +290,9 @@ def COV_piecewise_linear(Bz, coords, height, spacing, P):
     calc_radius = max(l) * spacing
     cell_size = 2 * calc_radius / cp
 
-    view_plane = int(height / cell_size + cp / 2)
+    view_plane = calculation_plane(cell_size=cell_size,
+                                   height=height,
+                                   cp=cp)
     tiles = np.zeros((cp, cp))
 
     coords_COV = []
