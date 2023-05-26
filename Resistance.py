@@ -46,7 +46,9 @@ def resistance_contour(l, material, d, nu):
     """
     Resistance_coil = []
     for i in l:
-        Resistance_coil.append(Coil_resistance(material, i, d, nu))
+        R = Coil_resistance(material, i, d, nu)
+        Resistance_coil.append(R)
+        print('Длина: ', i, '\n', 'Сопротивление: ', R)
     return (np.sum(list(map(lambda x: x ** (-1), Resistance_coil)))) ** (-1)
 
 
@@ -89,10 +91,11 @@ def length_piecewise_linear_coils(coils):
     l = []
     for coil in coils:
         lenght_coil = 0
-        for i in range(len(coil)):
-            try:
-                lenght_coil += np.sqrt((coil[i][0] - coil[i+1][0])**2 + (coil[i][1] - coil[i+1][1])**2)
-            except IndexError:
-                lenght_coil += np.sqrt((coil[0][0] - coil[i][0]) ** 2 + (coil[0][1] - coil[i][1]) ** 2)
+        for j, turn in enumerate(coil):
+            for i in range(len(turn)):
+                try:
+                    lenght_coil += np.sqrt((coil[j][i][0] - coil[j][i+1][0])**2 + (coil[j][i][1] - coil[j][i+1][1])**2)
+                except IndexError:
+                    lenght_coil += np.sqrt((coil[j][0][0] - coil[j][i][0]) ** 2 + (coil[j][0][1] - coil[j][i][1]) ** 2)
         l.append(lenght_coil)
     return l

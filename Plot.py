@@ -1,18 +1,36 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from Bz_Field import Radii_in_coords, Radii_in_sides_square, transposition
+from Bz_Field import Radii_in_coords, Radii_in_sides_square
+
+
+def transposition(xv, yv, zv):
+    """
+    Transposes a three-dimensional array at a fixed third index
+    ---------------
+    """
+    cp = len(xv)
+
+    xv_T = np.zeros((cp, cp, cp))
+    yv_T = np.zeros((cp, cp, cp))
+    zv_T = np.zeros((cp, cp, cp))
+
+    for i in range(cp):
+        xv_T[:, :, i] = xv[:, :, i].T
+        yv_T[:, :, i] = yv[:, :, i].T
+        zv_T[:, :, i] = zv[:, :, i].T
+
+    return xv_T, yv_T, zv_T
 
 
 def plot_2d(Bz, height, a_max, spacing, cp):
     """
-
-
+    Draws a 2D graph of the magnetic field with a cut on the X-axis
     """
     calc_radius = a_max * spacing  # Calculation domain length
     x = np.linspace(-calc_radius, calc_radius, cp)
     view_plane = int(height / (2 * calc_radius / cp) + cp / 2)
     fig = plt.figure()
-    plt.plot(x * 1e2, Bz[:, view_plane, view_plane] * 1e6)
+    plt.plot(x * 1e2, Bz[view_plane, :, view_plane] * 1e6, color='#000000')
     plt.xlabel('x [cm]')
     plt.ylabel('Bz [uT]')
     plt.title('Bz Field at {} mm height'.format(height * 1e3))
@@ -22,45 +40,22 @@ def plot_2d(Bz, height, a_max, spacing, cp):
 
 def plot_3d(Bz, height, a_max, spacing, cp):
     """
-
-
+    Draws a 3D graph of the magnetic field
     """
     calc_radius = a_max * spacing  # Calculation domain length
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)  # Creating meshgrid
-    # xv, yv, zv = transposition(xv, yv, zv)
+    xv, yv, zv = transposition(xv, yv, zv)
     view_line = height / (2 * calc_radius / np.size(x)) + np.size(x) / 2
     view_line = int(view_line)
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    ax.plot_surface(xv[:, :, 1] * 1e2, yv[:, :, 1] * 1e2, Bz[:, :, view_line] * 1e6, cmap='inferno')
+    ax.plot_surface(xv[:, :, view_line] * 1e2, yv[:, :, view_line] * 1e2, Bz[:, :, view_line] * 1e6, cmap='inferno')
     ax.set_title('Bz Field at {} mm height'.format(height * 1e3))
     plt.xlabel('x [cm]')
     plt.ylabel('y [cm]')
 
     return fig
-
-
-def plot_vector(Bz, height, a_max, spacing, cp):
-    """
-
-
-    """
-    calc_radius = a_max * spacing  # Calculation domain length
-    x = np.linspace(-calc_radius, calc_radius, cp)
-    xv, yv, zv = np.meshgrid(x, x, x)  # Creating meshgrid
-    view_line = height / (2 * calc_radius / np.size(x)) + np.size(x) / 2
-    view_line = int(view_line)
-    fig = plt.figure()
-
-    ax = fig.add_subplot(projection='3d')
-    ax.quiver(xv[::30, ::30, ::30], yv[::30, ::30, ::30], zv[::30, ::30, ::30], Bx_sum[::30, ::30, ::30],
-              By_sum[::30, ::30, ::30], Bz_sum[::30, ::30, ::30], length=0.03, normalize=True)
-
-    ax.set_title('Vector field'.format(height * 1e3))
-    plt.xlabel('x [cm]')
-    plt.ylabel('y [cm]')
-    plt.show()
 
 
 def plot_coil(a_max, spacing, R):

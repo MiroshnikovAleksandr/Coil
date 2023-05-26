@@ -3,15 +3,37 @@ import numpy as np
 import Bz_Field
 import COV
 import Plot
+import Resistance
+from turns_splitter import split
 
-R = np.linspace(0.1,1,10)
+# R = [1]
+# R = [1, 0.1]
+# R = [0.1, 0.15, 0.20, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1]
+# R = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+R = [0.5, 0.498, 0.496, 0.494, 0.492, 0.49, 0.488, 0.47193548387096773, 0.44242039542143596, 0.4009719042663892, 0.3499479708636837, 0.26993756503642036, 0.07577315296566078]
+#COV = 35.3, P=0.75, cp=30
+# R = [0.5, 0.498, 0.496, 0.494, 0.492, 0.49, 0.44561290322580643, 0.3918126951092612, 0.29253902185223724, 0.18176899063475543]
+# R = [0.49560117302052786, 0.4892648956693985, 0.48469440980613054, 0.4788462603520781, 0.47474048210799696, 0.4394968510189397, 0.3368078017904903, 0.2772089965973231, 0.053342288651341725]
+# R = [0.49912023460410554, 0.49624609924808577, 0.4933797840289184, 0.49051127871277334, 0.4859370433117477, 0.4813430970379225, 0.4636801025102983, 0.3037423712099712, 0.05177173685583486]
+#COV = 0.455
+# R = [0.46964809384164224, 0.43947828106053444, 0.43598796593309885, 0.43169145432185824, 0.22431851004606657]
+#COV = 0.495
+# R = [0.47800586510263926, 0.4551844640712297, 0.43753224229811116, 0.4113145397786397, 0.4005120183004962, 0.3038992039398813, 0.23097192146610362, 0.055681340889741235]
+# R = [0.49868035190615834, 0.495370438850715, 0.49337630395335436, 0.4913821690559937, 0.4893880341586329, 0.4856786290680908, 0.4819448233159329, 0.4799585085554246, 0.4779721937949163, 0.28982669567685176, 0.05113202787500394]
+#COV = 0.385
+# R = [0.49208211143695013, 0.48233873117706244, 0.4790892235188896, 0.47498774520342957, 0.4721727252660939, 0.47021769105299516, 0.4603156663599384, 0.06999875015408077]
+#COV = 0.401
 coords = [[-0.5, -0.866025], [-1, 0], [-0.5, 0.866025], [0.5, 0.866025], [1, 0], [0.5, -0.866025]]
 I = 1
+freq = 6.78e6
+material = 'Copper'
+D = 0.002
 P = 0.9
 spacing = 1.5
-cp = 50
-height = 0.015
-
+cp = 90
+height = 0.08
+split_R = split(R, freq)
+print(R, '\n', split_R)
 l = []
 for i in range(len(coords)):
     l.append(np.sqrt((coords[i][0])**2 + (coords[i][1])**2))
@@ -21,9 +43,16 @@ g = max(l)
 Bz_piecewise = Bz_Field.Bz_piecewise_linear_contour(R, coords, I, spacing, cp)
 Plot.plot_3d(Bz_piecewise, height, g, spacing, cp)
 plt.show()
-# Plot.plot_2d(Bz_piecewise, height, g, spacing, cp)
-# plt.show()
-# Plot.plot_piecewise_linear_coil(coords, spacing, R)
-# plt.show()
+Plot.plot_2d(Bz_piecewise, height, g, spacing, cp)
+plt.show()
+Plot.plot_piecewise_linear_coil(coords, spacing, R)
+plt.show()
 COV = COV.COV_piecewise_linear(Bz_piecewise, coords, height, spacing, P)
 print(round(COV*100, 1), '%')
+
+# lengths = Resistance.length_piecewise_linear_coils(Bz_Field.Radii_in_coords(split_R, coords, split=True))
+# length = sum(lengths)
+# Resistance = Resistance.resistance_contour(lengths, material, D, freq)
+# print(length, Resistance)
+
+

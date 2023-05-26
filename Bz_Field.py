@@ -3,25 +3,6 @@ import math
 from scipy.special import ellipk,ellipkm1, ellipe
 
 
-def transposition(xv, yv, zv):
-    """
-    Transposes a three-dimensional array at a fixed third index
-    ---------------
-    """
-    cp = len(xv)
-
-    xv_T = np.zeros((cp, cp, cp))
-    yv_T = np.zeros((cp, cp, cp))
-    zv_T = np.zeros((cp, cp, cp))
-
-    for i in range(cp):
-        xv_T[:, :, i] = xv[:, :, i].T
-        yv_T[:, :, i] = yv[:, :, i].T
-        zv_T[:, :, i] = zv[:, :, i].T
-
-    return xv_T, yv_T, zv_T
-
-
 def prop_coeff(R):
     """
     Calculates the radius reduction factor
@@ -107,8 +88,6 @@ def Bz_segment(start_point, end_point, I, cp, calc_radius):
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)
 
-    # xv, yv, zv = transposition(xv, yv, zv)
-
     if x1 != x2 and y1 != y2:
 
         k = (y2 - y1) / (x2 - x1)
@@ -186,8 +165,6 @@ def Bz_piecewise_linear_contour(R, coords,  I, spacing, cp, direction=False):
     if not direction:
         I = -I
 
-    I = np.sqrt(2)*I
-
     list_of_coords = Radii_in_coords(R, coords)
 
     l = []
@@ -196,7 +173,7 @@ def Bz_piecewise_linear_contour(R, coords,  I, spacing, cp, direction=False):
 
     calc_radius = np.amax(l) * spacing
 
-    Bz_piecewise_linear_contour = np.zeros([cp, cp, cp])
+    Bz_piecewise_linear_contour = np.zeros((cp, cp, cp))
 
     for coil in list_of_coords:
         Bz_piecewise_linear_contour += Bz_piecewise_linear_contour_single(coords=coil,
@@ -243,7 +220,7 @@ def Bz_circular_contour(R, I, spacing, cp):
     @param cp: Calculation domain points
     @return: Z-component B of the field of a circular contour
     """
-    Bz_circular_contour = np.zeros([cp, cp, cp])
+    Bz_circular_contour = np.zeros((cp, cp, cp))
 
     calc_radius = max(R) * spacing
 
@@ -269,7 +246,6 @@ def Bz_square_single(m, n, I, cp, calc_radius):
     mu0 = np.pi * 4e-7
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)  # Creating meshgrid
-    # xv, yv, zv = transposition(xv, yv, zv)
 
     C = mu0 * I / (4 * np.pi)
 
@@ -307,7 +283,7 @@ def Bz_square_contour(R, X_side, Y_side, I, spacing, cp):
     """
     X_sides, Y_sides = Radii_in_sides_square(R, X_side, Y_side)
 
-    Bz_square_contour = np.zeros([cp, cp, cp])
+    Bz_square_contour = np.zeros((cp, cp, cp))
 
     calc_radius = 0.5 * max([X_side, Y_side]) * spacing
 
