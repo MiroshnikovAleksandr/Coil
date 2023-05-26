@@ -22,6 +22,22 @@ def transposition(xv, yv, zv):
     return xv_T, yv_T, zv_T
 
 
+def transposition(xv, yv, zv):
+    cp = len(xv)
+    xv_T = np.zeros((cp, cp, cp))
+    for i in range(len(xv)):
+        xv_T[:, :, i] += xv[:, :, i].T
+
+    zv_T = np.zeros((cp, cp, cp))
+    for i in range(len(zv)):
+        zv_T[:, :, i] += zv[:, :, i].T
+
+    yv_T = np.zeros((cp, cp, cp))
+    for i in range(len(yv)):
+        yv_T[:, :, i] += yv[:, :, i].T
+    return xv_T, yv_T, zv_T
+
+
 def prop_coeff(R):
     """
     Calculates the radius reduction factor
@@ -58,6 +74,20 @@ def Radii_in_sides_square(R, X_side, Y_side, split = False):
             Y_sides.append(Y_side * k)
 
         return X_sides, Y_sides
+
+# for i in range(
+#     len(Radii_in_coords([0.2, 0.4, 0.6, 1],
+#                       coords_max=[[-0.5, -0.866025], [-1, 0], [-0.5, 0.866025], [0.5, 0.866025], [1, 0],
+#                                   [0.5, -0.866025]]))):
+#     for j in range(len(Radii_in_coords([0.2, 0.4, 0.6, 1],
+#                       coords_max=[[-0.5, -0.866025], [-1, 0], [-0.5, 0.866025], [0.5, 0.866025], [1, 0],
+#                                   [0.5, -0.866025]])[i])):
+#         print(Radii_in_coords([0.2, 0.4, 0.6, 1],
+#                       coords_max=[[-0.5, -0.866025], [-1, 0], [-0.5, 0.866025], [0.5, 0.866025], [1, 0],
+#                                   [0.5, -0.866025]])[i][j])
+# print(Radii_in_coords([0.2, 0.4, 0.6, 1],
+#                       coords_max=[[-0.5, -0.866025], [-1, 0], [-0.5, 0.866025], [0.5, 0.866025], [1, 0],
+#                                   [0.5, -0.866025]]))
 
 
 def Radii_in_coords(R, coords_max, split=False):
@@ -106,6 +136,7 @@ def Bz_segment(start_point, end_point, I, cp, calc_radius):
 
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)
+    xv, yv, zv = transposition(xv, yv, zv)
 
     # xv, yv, zv = transposition(xv, yv, zv)
 
@@ -220,6 +251,7 @@ def Bz_circular_single(a, I, cp, calc_radius):
     mu0 = np.pi * 4e-7
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)  # Creating meshgrid
+    xv, yv, zv = transposition(xv, yv, zv)
 
     ro = np.sqrt(xv ** 2 + yv ** 2)
     r = np.sqrt(xv ** 2 + yv ** 2 + zv ** 2)

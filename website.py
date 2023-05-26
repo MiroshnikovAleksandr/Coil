@@ -3,15 +3,13 @@ import os
 import streamlit as st
 import pandas as pd
 import numpy as np
-import macros
 import Field_functions as ff
+import macros
 import tomli
 import Resistance
 from DEAP_Field_refactored import Genetic
 from turns_splitter import split
 import Plot
-import Bz_Field
-from Genetic_rect import GeneticRectangle
 
 radius = 0.0
 min_radius = 0.0
@@ -37,8 +35,6 @@ def changeSize(var, size):
         return var / 100
     if size == 'мм':
         return var / 1000
-    else:
-        return var
 
 
 with open('parameters.toml', 'rb') as toml:
@@ -106,7 +102,7 @@ with st.sidebar:
             cord[i] = [x[i], y[i]]
 
     st.header("Электрические параметры")
-
+    variable, size = st.columns([3, 1])
     with variable:
         frequency = st.number_input('Частота, [МГц]', value=(parameters['geom']['freq'] / (10 ** 6)))
         I = st.number_input('Сила тока [A]', value=parameters['geom']['I'])
@@ -147,7 +143,7 @@ if do:
         width = changeSize(width, size_w)
         parameters['geom']['Y_side'] = width
     if h > 0.0:
-        h = changeSize(h, size)
+        h = changeSize(h, size_h)
         parameters['geom']['height'] = h
     if form == 'круглая':
         parameters['geom']['figure'] = 'Circular'
@@ -168,51 +164,42 @@ if do:
 
     parameters['geom']['coords'] = cord
 
-    # if form == 'прямоугольная':
-    #     GA = GeneticRectangle(parameters)
-    # else:
-    #     GA = Genetic(parameters)
     GA = Genetic(parameters)
     GA.preparation()
     flat_radii_array = GA.execution()
     radii_array = split(flat_radii_array, GA.freq)
     Magnetic_field = GA.determine_Bz(GA.hall_of_fame[0])
     final_COV = GA.determine_COV(Magnetic_field)
-    length = GA.length(GA.hall_of_fame[0])
     GA.show()
 
     if GA.figure == 'Circular':
-        lengths = Resistance.length_circular_coils(coils=radii_array)
+        length = Resistance.length_circular_coils(coils=radii_array)
         coil_pic = Plot.plot_coil(a_max=GA.a_max, spacing=GA.spacing, R=flat_radii_array)
         field_pic_3d = Plot.plot_3d(Bz=Magnetic_field,
                                     height=GA.height, a_max=GA.a_max,
                                     spacing=GA.spacing, cp=GA.cp)
         macros = macros.create_circular_macros(radii_array)
     elif GA.figure == 'Rectangle':
-        lengths = Resistance.length_square_coils(coils=Bz_Field.Radii_in_sides_square(radii_array,
-                                                                                      X_side=GA.X_side,
-                                                                                      Y_side=GA.Y_side,
-                                                                                      split=True))
+        length = Resistance.length_square_coils(coils=radii_array)
         coil_pic = Plot.plot_square_coil(m_max=GA.X_side, n_max=GA.Y_side, spacing=GA.spacing, R=flat_radii_array)
         field_pic_3d = Plot.plot_3d(Bz=Magnetic_field,
-                                    height=GA.height, a_max=0.5 * max(GA.X_side, GA.Y_side),
+                                    height=GA.height, a_max=max(GA.X_side, GA.Y_side),
                                     spacing=GA.spacing, cp=GA.cp)
         macros = macros.create_rectangular_macros(radii_array)
     elif GA.figure == 'Piecewise':
         l = []
         for i in range(len(GA.coords)):
             l.append(np.sqrt((GA.coords[i][0]) ** 2 + (GA.coords[i][1]) ** 2))
+        calc_radius = max(l) * GA.spacing
 
-        lengths = Resistance.length_piecewise_linear_coils(coils=Bz_Field.Radii_in_coords(radii_array,
-                                                                                          coords_max=GA.coords,
-                                                                                          split=True))
+        length = Resistance.length_piecewise_linear_coils(coils=radii_array)
         coil_pic = Plot.plot_piecewise_linear_coil(coords_max=GA.coords, spacing=GA.spacing, R=flat_radii_array)
         field_pic_3d = Plot.plot_3d(Bz=Magnetic_field,
-                                    height=GA.height, a_max=max(l),
+                                    height=GA.height, a_max=calc_radius,
                                     spacing=GA.spacing, cp=GA.cp)
     # macros = macros.(radii_array)
 
-    resistance = Resistance.resistance_contour(l=lengths, material=GA.material, d=GA.minimal_gap, nu=GA.freq)
+    resistance = Resistance.resistance_contour(l=length, material=GA.material, d=GA.minimal_gap, nu=GA.freq)
     col1, col2 = st.columns([3, 2])
     with col1:
         st.download_button(label="Download a CST macros for your coil",
@@ -223,7 +210,7 @@ if do:
         st.write(f'This is the resistance of your coil (Ohm):')
         st.write(resistance)
         st.write(f'This is the total length of your coil (m):')
-        st.write(length)
+        st.write(sum(length))
 
     with col2:
         st.pyplot(coil_pic, dpi=1000)
