@@ -147,7 +147,7 @@ if do:
         width = changeSize(width, size_w)
         parameters['geom']['Y_side'] = width
     if h > 0.0:
-        h = changeSize(h, size)
+        h = changeSize(h, size_h)
         parameters['geom']['height'] = h
     if form == 'круглая':
         parameters['geom']['figure'] = 'Circular'
