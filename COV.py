@@ -2,6 +2,8 @@ import numpy as np
 import math
 import copy
 
+import Bz_Field
+
 
 def dist(x1, y1, x2, y2):
     """
@@ -362,6 +364,8 @@ def COV_circle(Bz, max_coil_r, height, spacing, P):
     COV = B_std / B_mean
     return COV
 
+Bz = Bz_Field.Bz_circular_contour(R=[0.08, 0.008], I=1, spacing=1.5, cp=30)
+print(COV_circle(Bz=Bz, max_coil_r=0.08, height=0.015, spacing=1.5, P=0.9))
 
 def COV_square(Bz, X_side, Y_side, height, spacing, P):
     """

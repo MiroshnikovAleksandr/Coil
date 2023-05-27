@@ -20,7 +20,7 @@ import Field_functions as ff
 def main():
     # Genetic
     len_of_turn = 5
-    no_of_generations = 50  # максимальное количество поколений
+    no_of_generations = 70  # максимальное количество поколений
     population_size = 100  # количество индивидуумов в популяции
     # size_of_individual = 1000 - (1000 % no_of_variables) # длина подлежащей оптимизации битовой строки
     probability_of_mutation = 0.1  # вероятность мутации индивидуума
@@ -28,8 +28,8 @@ def main():
     CXPB, MUTPB = 0.4, 0.04  # вероятность мутации и срещивания
 
     # Geometrical & Electrical parameters.toml
-    a_max = 0.5  # [m] Max coil radius
-    a_min = 0.05  # [m] Min coil radius
+    a_max = 0.08  # [m] Max coil radius
+    a_min = 0.008  # [m] Min coil radius
     I = 1  # [A] Current
     spacing = 1.5  # spacing for calculation domain
     cp = 30  # Calculation domain points
@@ -42,7 +42,7 @@ def main():
     # bounds = [(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max),(a_min,a_max)]
 
     # bounds = []
-    minimal_gap = 0.002
+    minimal_gap = 0.003
     # for i in range(no_of_variables):
     #    bounds.append((a_min, a_max-i*minimal_gap))
 

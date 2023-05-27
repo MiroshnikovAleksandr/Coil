@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
+
+import Bz_Field
 from Bz_Field import Radii_in_coords, Radii_in_sides_square, transposition
 
 
@@ -17,7 +19,7 @@ def plot_2d(Bz, height, a_max, spacing, cp):
     plt.xlabel('x [cm]')
     plt.ylabel('Bz [uT]')
     plt.title('Bz Field at {} mm height'.format(height * 1e3))
-
+    plt.show()
     return fig
 
 
@@ -38,7 +40,7 @@ def plot_3d(Bz, height, a_max, spacing, cp):
     ax.set_title('Bz Field at {} mm height'.format(height * 1e3))
     plt.xlabel('x [cm]')
     plt.ylabel('y [cm]')
-
+    plt.show()
     return fig
 
 
@@ -115,7 +117,7 @@ def plot_square_coil(m_max, n_max, spacing, R):
 
         plt.xlabel('x [m]')
         plt.ylabel('y [m]')
-
+    plt.show()
     return fig
 
 
@@ -130,8 +132,8 @@ def plot_piecewise_linear_coil(coords_max, spacing, R):
     fig = plt.figure(figsize=(5, 5), dpi=100)
     ax = fig.subplots()
     l = []
-    for i in range(len(coords_max)-1):
-        l.append(np.sqrt(coords_max[i][0]**2 + coords_max[i][1]**2))
+    for i in range(len(coords_max) - 1):
+        l.append(np.sqrt(coords_max[i][0] ** 2 + coords_max[i][1] ** 2))
 
     r_max = max(l) * spacing
 
@@ -149,5 +151,8 @@ def plot_piecewise_linear_coil(coords_max, spacing, R):
 
         plt.xlabel('x [m]')
         plt.ylabel('y [m]')
-
+    plt.show()
     return fig
+
+plot_piecewise_linear_coil(coords_max=[[0, 0], [1, 0], [1, 4], [2, 4], [2, 0], [3, 0], [3, 5], [0,5], [0, 0]],
+                           spacing=1.5, R=[1, 0.5])
