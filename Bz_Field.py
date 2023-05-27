@@ -4,21 +4,7 @@ from scipy.special import ellipk,ellipkm1, ellipe
 from COV import calculation_plane
 
 
-def prop_coeff(R):
-    """
-    Calculates the radius reduction factor
-    ---------------
-    """
-    R.sort()
-    R.reverse()
-    prop = []
-    for i in range(len(R)):
-        prop.append(R[i]/max(R))
-
-    return prop
-
-
-def Radii_in_sides_square(R, X_side, Y_side, split = False):
+def Radii_in_sides_rectangle(R, X_side, Y_side, split = False):
     """
     Converts radii to sides of a rectangular coil
     ---------------
@@ -33,9 +19,8 @@ def Radii_in_sides_square(R, X_side, Y_side, split = False):
             split_sides.append(sides)
         return split_sides
     else:
-        prop = prop_coeff(R=R)
         X_sides, Y_sides = [], []
-        for k in prop:
+        for k in R:
             X_sides.append(X_side * k)
             Y_sides.append(Y_side * k)
 
@@ -50,9 +35,8 @@ def Radii_in_coords(R, coords_max, split=False):
     if split:
         split_list_of_coords = []
         for coil in R:
-            prop = prop_coeff(R=coil)
             list_of_coords = []
-            for k in prop:
+            for k in coil:
                 new_coords = []
                 for point in coords_max:
                     new_coords.append([point[0] * k, point[1] * k])
@@ -60,9 +44,8 @@ def Radii_in_coords(R, coords_max, split=False):
             split_list_of_coords.append(list_of_coords)
         return split_list_of_coords
     else:
-        prop = prop_coeff(R=R)
         list_of_coords = []
-        for k in prop:
+        for k in R:
             new_coords = []
             for point in coords_max:
                 new_coords.append([point[0] * k, point[1] * k])
@@ -252,7 +235,7 @@ def Bz_circular_contour(R, I, P, cp, height):
 
 def Bz_rectangle_single(m, n, I, cp, calc_radius, view_plane):
     """
-    Calculates the Bz field of a single square coil
+    Calculates the Bz field of a single rectangle coil
     ---------------
     @param m: Side parallel to the x-axis
     @param n: Side parallel to the y-axis
@@ -291,7 +274,7 @@ def Bz_rectangle_single(m, n, I, cp, calc_radius, view_plane):
 
 def Bz_rectangle_contour(R, X_side, Y_side, I, P, cp, height):
     """
-    Calculates the Bz field for a square contour
+    Calculates the Bz field for a rectangle contour
     ---------------
     @param R: Array of radii
     @param X_side: The largest side parallel to the x-axis
@@ -302,7 +285,7 @@ def Bz_rectangle_contour(R, X_side, Y_side, I, P, cp, height):
     @param height: Height above the coil [m]
     @return: Z-component B of the field of a rectangle contour
     """
-    X_sides, Y_sides = Radii_in_sides_square(R, X_side, Y_side)
+    X_sides, Y_sides = Radii_in_sides_rectangle(R, X_side, Y_side)
 
     Bz_rectangle_contour = np.zeros((cp, cp, cp))
 

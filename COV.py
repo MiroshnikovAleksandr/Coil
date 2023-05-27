@@ -43,14 +43,14 @@ def mask_circular(tiles, r):
                 tiles[y][x] = 1
 
 
-def mask_square(tiles, X_side, Y_side):
+def mask_rectangle(tiles, X_side, Y_side):
     """
-    Creates a square binary mask
+    Creates a rectangle binary mask
     ---------------
     @param tiles: Zero two-dimensional array
     @param X_side: Half the side parallel to the x-axis of the calculation domain is in points
     @param Y_side: Half the side parallel to the y-axis of the calculation domain is in points
-    @return: A square binary mask
+    @return: A rectangle binary mask
     """
     half_cp = len(tiles) // 2
     for x in range(half_cp - X_side, half_cp + X_side + 1):
@@ -233,9 +233,9 @@ def COV_circle(Bz, max_coil_r, height, P):
     return COV
 
 
-def COV_square(Bz, X_side, Y_side, height, P):
+def COV_rectangle(Bz, X_side, Y_side, height, P):
     """
-    Calculates the coefficient of variation for a square coil
+    Calculates the coefficient of variation for a rectangle coil
     ---------------
     @param Bz: Field for calculating the COV
     @param X_side: Side parallel to the x-axis
@@ -257,7 +257,7 @@ def COV_square(Bz, X_side, Y_side, height, P):
     X_side_COV = round(X_side * P / cell_size)
     Y_side_COV = round(Y_side * P / cell_size)
 
-    mask_square(tiles, X_side_COV // 2, Y_side_COV // 2)
+    mask_rectangle(tiles, X_side_COV // 2, Y_side_COV // 2)
 
     Bz_masked = np.multiply(Bz[:, :, view_plane], tiles)
 

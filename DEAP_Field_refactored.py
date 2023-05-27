@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import Bz_Field as Bz
 import COV
+import Resistance
 import tomli
 import Field_functions as ff
 
@@ -20,7 +21,6 @@ import Field_functions as ff
 
 with open('parameters.toml', 'rb') as toml:
     parameters = tomli.load(toml)
-
 
 toolbox = base.Toolbox()  # create toolbox for genetic algorithm
 
@@ -38,8 +38,6 @@ class Genetic:
     """
 
     def __init__(self, params):
-        self.COV = None
-        self.radii = None
         self.hall_of_fame = None
         self.logbook = None
         self.pop = None
@@ -54,7 +52,7 @@ class Genetic:
         self.figure = params['geom']['figure']
         self.X_side = params['geom']['X_side']
         self.Y_side = params['geom']['Y_side']
-        if self.figure != 'Circular':
+        if self.figure == 'Rectangle':
             self.a_max = max(self.X_side, self.Y_side)/2
             self.a_min = self.a_max/10
         else:
@@ -80,7 +78,7 @@ class Genetic:
         """
         toolbox.register("ZeroOrOne", random.randint, 0, 1)
         toolbox.register("individual", tools.initRepeat, creator.Individual,
-                         toolbox.ZeroOrOne, random.randint(50, 1000))
+                         toolbox.ZeroOrOne, random.randint(50, 5*self.a_max//self.minimal_gap))
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
         self.pop = toolbox.population(n=self.population_size)
@@ -229,8 +227,26 @@ class Genetic:
         @param ind: creator.Individual
         @return: float
         """
-        l = 2 * math.pi * np.sum(np.array(self.decode_all_x(ind)))
-        return l
+        coil = self.decode_all_x(ind)
+        if self.figure == 'Circular':
+            l = 2 * math.pi * np.sum(np.array(coil))
+            return l
+        elif self.figure == 'Rectangle':
+            l = 2 * (self.X_side + self.Y_side) * np.sum(np.array(coil)) / max(coil)
+            return l
+        elif self.figure == 'Piecewise':
+            coords_ = Bz.Radii_in_coords(coil, self.coords)
+            l = 0
+            coords = []
+            for i in range(len(coords_)):
+                for j in range(len(coords_[i])):
+                    coords.append(coords_[i][j])
+            for i in range(len(coords)):
+                try:
+                    l += np.sqrt((coords[i][0] - coords[i + 1][0]) ** 2 + (coords[i][1] - coords[i + 1][1]) ** 2)
+                except IndexError:
+                    l += np.sqrt((coords[0][0] - coords[i][0]) ** 2 + (coords[0][1] - coords[i][1]) ** 2)
+            return l
 
     def check_feasibility(self, ind):
         """
@@ -238,7 +254,9 @@ class Genetic:
         @param ind: creator.Individual
         @return: boolean
         """
-        if self.length(ind) > 100:
+        # if self.length(ind) > 100:
+        #     return False
+        if len(self.decode_all_x(ind)) < 5:
             return False
         else:
             return True
@@ -250,7 +268,7 @@ class Genetic:
         @return: list, containing the COV of the best individual
         """
         # registering objective function with constraint
-        toolbox.register("evaluate", self.objective_fxn)  # privide the objective function here
+        toolbox.register("evaluate", self.objective_fxn)  # provide the objective function here
         toolbox.decorate("evaluate",
                          tools.DeltaPenalty(self.check_feasibility, 1.5))  # constraint on the objective function
 
@@ -284,9 +302,14 @@ class Genetic:
         Displays the results (statistics plot, best COV, total length of the best individual).
         @return:
         """
+        print(self.hall_of_fame[0])
         print(self.decode_all_x(self.hall_of_fame[0]))
 
 
+GA = Genetic(parameters)
+GA.preparation()
+GA.execution()
+GA.show()
 # for i in range(50, 101, 10):
 #     no_of_generations = i
 #     GA = Genetic(parameters)

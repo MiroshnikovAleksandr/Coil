@@ -124,7 +124,7 @@ class GeneticRectangle:
         sides = self.decode_all_x(individual)
         bz = Bz_Field.Bz_rectangle_contour(R=sides, X_side=self.X_side, Y_side=self.Y_side,
                                         I=self.I, P=self.calculation_area, cp=self.cp, height=self.height)
-        cov = COV.COV_square(Bz=bz, X_side=self.X_side, Y_side=self.Y_side,
+        cov = COV.COV_rectangle(Bz=bz, X_side=self.X_side, Y_side=self.Y_side,
                              height=self.height, P=self.calculation_area)
 
         obj_function_value = cov
