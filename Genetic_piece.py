@@ -7,6 +7,8 @@ import math
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+
+import Bz_Field
 import Bz_Field as Bz
 import COV
 import Resistance
@@ -32,7 +34,7 @@ creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMin)
 
 
-class Genetic:
+class Genetic_piecewise:
     """
     This class describes the genetic algorithm.
     """
@@ -67,6 +69,9 @@ class Genetic:
         self.calculation_area = params['geom']['calculation_area']
         self.material = params['geom']['material']
         self.freq = params['geom']['freq']
+        self.k = None
+        self.min_side = None
+        self.bounds_const = None
 
     def preparation(self):
         """
@@ -83,16 +88,25 @@ class Genetic:
 
         self.pop = toolbox.population(n=self.population_size)
 
-    def bounds_fn(self, ind):
+    def minimal_side(self):
         """
-        Calculates boundaries of coil turn placement based on the diameter of the wire;
-        sorts the turns of an individual (coil) in descending order.
-        @param ind: creator.Individual
-        @return: list, containing the sorted individual and the boundaries
+        Calculates the shortest side of the figure.
+        @return: tuple, containing the coordinates of the endpoints of the shortest side.
         """
-        ind = [0] * (self.len_of_turn - (len(ind) % self.len_of_turn)) + ind
+        sides = [(self.coords[i], self.coords[i + 1]) for i in range(len(self.coords) - 1)]
+        sides.append((self.coords[-1], self.coords[0]))
+        sorted_sides = sorted(sides,
+                              key=lambda x: np.sqrt((x[0][0] - x[1][0])**2 + (x[0][1] - x[1][1])**2))
+        self.min_side = sorted_sides[0]
+        self.k = (self.min_side[0][1] - self.min_side[1][1]) / (self.min_side[0][0] - self.min_side[1][0])
+        self.bounds_const = np.sqrt(1 + self.k**2) / (abs(self.k*(self.min_side[0][1] - self.k*self.min_side[0][0])))
 
-        bounds = [(self.a_min, self.a_max)]
+    def bounds_fn(self, ind):
+        ind = [0] * (self.len_of_turn - (len(ind) % self.len_of_turn)) + ind
+        Min = 0.1
+        Max = 1
+        bounds = [(Min, Max)]
+
         len_chromosome = len(ind)
         len_chromosome_one_var = self.len_of_turn
         no_of_variables = len_chromosome // len_chromosome_one_var
@@ -111,12 +125,12 @@ class Genetic:
 
         sorted_individual = list(''.join(s for s in array_of_chromosomes_one))
 
-        precision = (self.a_max - self.a_min) / ((2 ** len_chromosome_one_var) - 1)
+        precision = (Max - Min) / ((2 ** len_chromosome_one_var) - 1)
 
-        radiuses = [x * precision + self.a_min for x in array_of_chromosomes_one_decimal_sorted]
+        coeffs = [x * precision + Min for x in array_of_chromosomes_one_decimal_sorted]
 
-        for i in range(1, no_of_variables):
-            bounds.append((self.a_min, radiuses[i - 1] - i * self.minimal_gap))
+        for i in range(1, len(coeffs)):
+            bounds.append((Min, coeffs[i - 1] - self.minimal_gap*self.bounds_const))
 
         return [sorted_individual, bounds]
 
@@ -149,50 +163,6 @@ class Genetic:
 
         return x
 
-    def determine_Bz(self, individual):
-        if self.figure == 'Circular':
-            return ff.Bz(self.a_max, self.a_min, 2, self.I, self.spacing, self.cp, self.decode_all_x(individual))
-            # return Bz.Bz_circular_contour(R=self.decode_all_x(individual),
-            #                               I=self.I,
-            #                               spacing=self.spacing,
-            #                               cp=self.cp)
-        elif self.figure == 'Rectangle':
-            return Bz.Bz_square_contour(R=self.decode_all_x(individual),
-                                        X_side=self.X_side,
-                                        Y_side=self.Y_side,
-                                        I=self.I,
-                                        spacing=self.spacing,
-                                        cp=self.cp)
-        elif self.figure == 'Piecewise':
-            return Bz.Bz_piecewise_linear_contour(R=self.decode_all_x(individual),
-                                                  coords=self.coords,
-                                                  I=self.I,
-                                                  spacing=self.spacing,
-                                                  cp=self.cp,
-                                                  direction=False)
-
-    def determine_COV(self, bz):
-        if self.figure == 'Circular':
-            return ff.COV_circ(bz, self.a_max, self.height, self.spacing)
-            # return COV.COV_circle(Bz=bz,
-            #                       max_coil_r=self.a_max,
-            #                       height=self.height,
-            #                       spacing=self.spacing,
-            #                       P=self.calculation_area)
-        elif self.figure == 'Rectangle':
-            return COV.COV_square(Bz=bz,
-                                  X_side=self.X_side,
-                                  Y_side=self.Y_side,
-                                  height=self.height,
-                                  spacing=self.spacing,
-                                  P=self.calculation_area)
-        elif self.figure == 'Piecewise':
-            return COV.COV_piecewise_linear(Bz=bz,
-                                            coords=self.coords,
-                                            height=self.height,
-                                            spacing=self.spacing,
-                                            P=self.calculation_area)
-
     def objective_fxn(self, individual):
         """
         This is the objective function of the genetic algorithm. It returns the coefficient of variation
@@ -200,8 +170,12 @@ class Genetic:
         @param individual: creator.Individual
         @return: list, containing the COV
         """
-        bz = self.determine_Bz(individual)
-        cov = self.determine_COV(bz)
+        coords = self.decode_all_x(individual)
+        bz = Bz_Field.Bz_piecewise_linear_contour(R=coords, coords=self.coords, I=self.I,
+                                                  P=self.calculation_area, cp=self.cp,
+                                                  height=self.height, direction=False)
+        cov = COV.COV_piecewise_linear(Bz=bz, coords=self.coords,
+                                       height=self.height, P=self.calculation_area)
 
         obj_function_value = cov
         return [obj_function_value]
@@ -306,8 +280,9 @@ class Genetic:
         print(self.decode_all_x(self.hall_of_fame[0]))
 
 
-GA = Genetic(parameters)
+GA = Genetic_piecewise(parameters)
 GA.preparation()
+GA.minimal_side()
 GA.execution()
 GA.show()
 # for i in range(50, 101, 10):
