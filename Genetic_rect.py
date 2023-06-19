@@ -114,6 +114,22 @@ class GeneticRectangle:
 
         return x
 
+    def determine_Bz(self, individual):
+        return Bz.Bz_square_contour(R=self.decode_all_x(individual),
+                                    X_side=self.X_side,
+                                    Y_side=self.Y_side,
+                                    I=self.I,
+                                    spacing=self.spacing,
+                                    cp=self.cp)
+
+    def determine_COV(self, bz):
+        return COV.COV_square(Bz=bz,
+                              X_side=self.X_side,
+                              Y_side=self.Y_side,
+                              height=self.height,
+                              spacing=self.spacing,
+                              P=self.calculation_area)
+
     def objective_fxn(self, individual):
         """
         This is the objective function of the genetic algorithm. It returns the coefficient of variation
@@ -144,6 +160,11 @@ class GeneticRectangle:
             del ind[len(ind) - self.len_of_turn::]
         ind = tools.mutFlipBit(ind, indpb=Indpb)
         return ind
+
+    def length(self, ind):
+        coil = self.decode_all_x(ind)
+        l = 2 * (self.X_side + self.Y_side) * np.sum(np.array(coil)) / max(coil)
+        return l
 
     def check_feasibility(self, ind):
         """
@@ -201,8 +222,7 @@ class GeneticRectangle:
         print(self.decode_all_x(self.hall_of_fame[0]))
 
 
-GA = GeneticRectangle(parameters)
-GA.decode_all_x([0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1])
+
 #
 # GA.preparation()
 # GA.execution()

@@ -163,6 +163,21 @@ class Genetic_piecewise:
 
         return x
 
+    def determine_Bz(self, individual):
+        return Bz.Bz_piecewise_linear_contour(R=self.decode_all_x(individual),
+                                              coords=self.coords,
+                                              I=self.I,
+                                              spacing=self.spacing,
+                                              cp=self.cp,
+                                              direction=False)
+
+    def determine_COV(self, bz):
+        return COV.COV_piecewise_linear(Bz=bz,
+                                        coords=self.coords,
+                                        height=self.height,
+                                        spacing=self.spacing,
+                                        P=self.calculation_area)
+
     def objective_fxn(self, individual):
         """
         This is the objective function of the genetic algorithm. It returns the coefficient of variation
@@ -195,31 +210,19 @@ class Genetic_piecewise:
         return ind
 
     def length(self, ind):
-        """
-        Calculates the length  of the coil.
-        @param ind: creator.Individual
-        @return: float
-        """
         coil = self.decode_all_x(ind)
-        if self.figure == 'Circular':
-            l = 2 * math.pi * np.sum(np.array(coil))
-            return l
-        elif self.figure == 'Rectangle':
-            l = 2 * (self.X_side + self.Y_side) * np.sum(np.array(coil)) / max(coil)
-            return l
-        elif self.figure == 'Piecewise':
-            coords_ = Bz.Radii_in_coords(coil, self.coords)
-            l = 0
-            coords = []
-            for i in range(len(coords_)):
-                for j in range(len(coords_[i])):
-                    coords.append(coords_[i][j])
-            for i in range(len(coords)):
-                try:
-                    l += np.sqrt((coords[i][0] - coords[i + 1][0]) ** 2 + (coords[i][1] - coords[i + 1][1]) ** 2)
-                except IndexError:
-                    l += np.sqrt((coords[0][0] - coords[i][0]) ** 2 + (coords[0][1] - coords[i][1]) ** 2)
-            return l
+        coords_ = Bz.Radii_in_coords(coil, self.coords)
+        l = 0
+        coords = []
+        for i in range(len(coords_)):
+            for j in range(len(coords_[i])):
+                coords.append(coords_[i][j])
+        for i in range(len(coords)):
+            try:
+                l += np.sqrt((coords[i][0] - coords[i + 1][0]) ** 2 + (coords[i][1] - coords[i + 1][1]) ** 2)
+            except IndexError:
+                l += np.sqrt((coords[0][0] - coords[i][0]) ** 2 + (coords[0][1] - coords[i][1]) ** 2)
+        return l
 
     def check_feasibility(self, ind):
         """
@@ -279,11 +282,11 @@ class Genetic_piecewise:
         print(self.decode_all_x(self.hall_of_fame[0]))
 
 
-GA = Genetic_piecewise(parameters)
-GA.preparation()
-GA.minimal_side()
-GA.execution()
-GA.show()
+# GA = Genetic_piecewise(parameters)
+# GA.preparation()
+# GA.minimal_side()
+# GA.execution()
+# GA.show()
 # for i in range(50, 101, 10):
 #     no_of_generations = i
 #     GA = Genetic(parameters)
