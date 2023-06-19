@@ -30,10 +30,10 @@ material = 'Copper'
 D = 0.002
 P = 0.9
 spacing = 1.5
-cp = 90
+cp = 200
 height = 0.08
-split_R = split(R, freq)
-print(R, '\n', split_R)
+# split_R = split(R, freq)
+# print(R, '\n', split_R)
 l = []
 for i in range(len(coords)):
     l.append(np.sqrt((coords[i][0])**2 + (coords[i][1])**2))

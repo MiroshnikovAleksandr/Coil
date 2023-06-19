@@ -3,21 +3,25 @@ import numpy as np
 import Bz_Field
 import COV
 import Plot
+import Resistance
+from turns_splitter import split
 
 # R = [1.0, 0.99, 0.98, 0.8016129032258065, 0.5645785639958377, 0.1]
 # R = [1.0, 0.99, 0.98, 0.7735483870967742, 0.4601664932362123, 0.14292403746097815]
 # R = [1.0, 0.99, 0.98, 0.8016129032258065, 0.6530697190426639, 0.16540062434963582]
 # R = [1.0, 0.99, 0.98, 0.97, 0.96, 0.95, 0.9129032258064516, 0.8492924037460977, 0.7881997918834548, 0.7296253902185225, 0.6515088449531738, 0.5370239334027055, 0.4513839750260147, 0.30115504682622274, 0.1]
-# R = [0.9947214076246335, 0.9497083788409112, 0.9075537706074079, 0.8607612593630946, 0.10142092574596594]
 R = [0.9868035190615836, 0.9664073637710947, 0.94961629156956, 0.9354977339376167, 0.9307658402203856, 0.9077152759264195, 0.8782809917355372, 0.7344661867946325, 0.6075559836373382, 0.43260284999269005, 0.10164612734095281]
 X_side = 1
 Y_side = 1
 I = 1
+freq = 6.78e6
+material = 'Copper'
+D = 0.002
 P = 0.9
 spacing = 1.5
-cp = 90
+cp = 200
 height = 0.06
-
+# split_R = split(R, freq)
 g = 0.5 * np.sqrt(X_side**2 + Y_side**2)
 
 Bz_square = Bz_Field.Bz_square_contour(R, X_side, Y_side, I, spacing, cp)
@@ -31,3 +35,8 @@ plt.show()
 
 COV = COV.COV_square(Bz_square, X_side, Y_side, height, spacing, P)
 print(round(COV*100, 1), '%')
+
+# lengths = Resistance.length_square_coils(Bz_Field.Radii_in_sides_square(split_R, X_side, Y_side, split=True))
+# length = sum(lengths)
+# Resistance = Resistance.resistance_contour(lengths, material, D, freq)
+# print(length, Resistance)

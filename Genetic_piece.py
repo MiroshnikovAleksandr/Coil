@@ -172,10 +172,9 @@ class Genetic_piecewise:
         """
         coords = self.decode_all_x(individual)
         bz = Bz_Field.Bz_piecewise_linear_contour(R=coords, coords=self.coords, I=self.I,
-                                                  P=self.calculation_area, cp=self.cp,
-                                                  height=self.height, direction=False)
+                                                  spacing=self.spacing, cp=self.cp)
         cov = COV.COV_piecewise_linear(Bz=bz, coords=self.coords,
-                                       height=self.height, P=self.calculation_area)
+                                       height=self.height, spacing=self.spacing, P=self.calculation_area)
 
         obj_function_value = cov
         return [obj_function_value]
@@ -280,9 +279,14 @@ class Genetic_piecewise:
         print(self.decode_all_x(self.hall_of_fame[0]))
 
 
+<<<<<<<< HEAD:DEAP_Field_refactored.py
+GA = Genetic(parameters)
+GA.preparation()
+========
 GA = Genetic_piecewise(parameters)
 GA.preparation()
 GA.minimal_side()
+>>>>>>>> a5306c9 (A lot of fixes):Genetic_piece.py
 GA.execution()
 GA.show()
 # for i in range(50, 101, 10):

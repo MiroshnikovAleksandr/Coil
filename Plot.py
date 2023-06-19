@@ -66,7 +66,7 @@ def plot_coil(a_max, spacing, R):
     @param spacing: Spacing between coil and the calculation domain boundary
     @param R: Set of radii
     """
-    fig = plt.figure(figsize=(3, 3), dpi=300)
+    fig = plt.figure(figsize=(3, 3), dpi=100)
 
     ax = fig.subplots()
     ax.set_xlim((-a_max * spacing, a_max * spacing))
