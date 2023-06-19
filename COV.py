@@ -22,6 +22,7 @@ def if_one(cut, S=0):
         elif cut[j] == 1 and cut[j + 1] != 1:
             return S
 
+
 def index_of_element(array, element):
     for index in range(len(array)):
         if array[index] == element:
@@ -56,7 +57,6 @@ def mask_square(tiles, X_side, Y_side):
     for x in range(half_cp - X_side, half_cp + X_side + 1):
         for y in range(half_cp - Y_side, half_cp + Y_side + 1):
             tiles[y][x] = 1
-
 
 
 def mask_piecewise_linear(tiles, coords):
@@ -288,7 +288,9 @@ def COV_piecewise_linear(Bz, coords, height, spacing, P):
     calc_radius = max(l) * spacing
     cell_size = 2 * calc_radius / cp
 
-    view_plane = int(height / cell_size + cp / 2)
+    view_plane = calculation_plane(cell_size=cell_size,
+                                   height=height,
+                                   cp=cp)
     tiles = np.zeros((cp, cp))
 
     coords_COV = []
