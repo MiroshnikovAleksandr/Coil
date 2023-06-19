@@ -3,20 +3,36 @@ import math
 from scipy.special import ellipk,ellipkm1, ellipe
 
 
-def Prop_in_sides_square(prop, X_side, Y_side, split = False):
+def prop_coeff(R):
+    """
+    Calculates the radius reduction factor
+    ---------------
+    """
+    R.sort()
+    R.reverse()
+    prop = []
+    for i in range(len(R)):
+        prop.append(R[i]/max(R))
+
+    return prop
+
+
+def Radii_in_sides_square(R, X_side, Y_side, split = False):
     """
     Converts radii to sides of a rectangular coil
     ---------------
     """
     if split:
         split_sides = []
-        for ks in prop:
+        for coil in R:
+            prop = prop_coeff(coil)
             sides = []
-            for k in ks:
+            for k in prop:
                 sides.append([X_side*k, Y_side*k])
             split_sides.append(sides)
         return split_sides
     else:
+        prop = prop_coeff(R=R)
         X_sides, Y_sides = [], []
         for k in prop:
             X_sides.append(X_side * k)
@@ -25,16 +41,17 @@ def Prop_in_sides_square(prop, X_side, Y_side, split = False):
         return X_sides, Y_sides
 
 
-def Prop_in_coords(prop, coords_max, split=False):
+def Radii_in_coords(R, coords_max, split=False):
     """
     Converts radii to vertex coordinates of a piecewise linear coil
     ---------------
     """
     if split:
         split_list_of_coords = []
-        for ks in prop:
+        for coil in R:
+            prop = prop_coeff(R=coil)
             list_of_coords = []
-            for k in ks:
+            for k in prop:
                 new_coords = []
                 for point in coords_max:
                     new_coords.append([point[0] * k, point[1] * k])
@@ -42,6 +59,7 @@ def Prop_in_coords(prop, coords_max, split=False):
             split_list_of_coords.append(list_of_coords)
         return split_list_of_coords
     else:
+        prop = prop_coeff(R=R)
         list_of_coords = []
         for k in prop:
             new_coords = []
@@ -132,7 +150,7 @@ def Bz_piecewise_linear_contour_single(coords,  I, cp, calc_radius):
     return Bz_piecewise_linear_contour_single
 
 
-def Bz_piecewise_linear_contour(prop, coords,  I, spacing, cp, direction=False):
+def Bz_piecewise_linear_contour(R, coords,  I, spacing, cp, direction=False):
     """
     Calculates the Bz field for a piecewise linear contour
     ---------------
@@ -147,7 +165,9 @@ def Bz_piecewise_linear_contour(prop, coords,  I, spacing, cp, direction=False):
     if not direction:
         I = -I
 
-    list_of_coords = Prop_in_coords(prop, coords)
+    I = np.sqrt(2)*I
+
+    list_of_coords = Radii_in_coords(R, coords)
 
     l = []
     for i in range(len(coords)):
@@ -155,7 +175,7 @@ def Bz_piecewise_linear_contour(prop, coords,  I, spacing, cp, direction=False):
 
     calc_radius = np.amax(l) * spacing
 
-    Bz_piecewise_linear_contour = np.zeros((cp, cp, cp))
+    Bz_piecewise_linear_contour = np.zeros([cp, cp, cp])
 
     for coil in list_of_coords:
         Bz_piecewise_linear_contour += Bz_piecewise_linear_contour_single(coords=coil,
@@ -202,7 +222,7 @@ def Bz_circular_contour(R, I, spacing, cp):
     @param cp: Calculation domain points
     @return: Z-component B of the field of a circular contour
     """
-    Bz_circular_contour = np.zeros((cp, cp, cp))
+    Bz_circular_contour = np.zeros([cp, cp, cp])
 
     calc_radius = max(R) * spacing
 
@@ -252,7 +272,7 @@ def Bz_square_single(m, n, I, cp, calc_radius):
     return Bz_square
 
 
-def Bz_square_contour(prop, X_side, Y_side, I, spacing, cp):
+def Bz_square_contour(R, X_side, Y_side, I, spacing, cp):
     """
     Calculates the Bz field for a square contour
     ---------------
@@ -263,9 +283,9 @@ def Bz_square_contour(prop, X_side, Y_side, I, spacing, cp):
     @param spacing: Spacing between coil and the calculation domain boundary
     @param cp: Calculation domain points
     """
-    X_sides, Y_sides = Prop_in_sides_square(prop, X_side, Y_side)
+    X_sides, Y_sides = Radii_in_sides_square(R, X_side, Y_side)
 
-    Bz_square_contour = np.zeros((cp, cp, cp))
+    Bz_square_contour = np.zeros([cp, cp, cp])
 
     calc_radius = 0.5 * max([X_side, Y_side]) * spacing
 

@@ -204,7 +204,7 @@ def calculation_plane(cell_size, height, cp):
         return int(height / cell_size + cp / 2)
 
 
-def COV_circle(Bz, max_coil_r, height, P):
+def COV_circle(Bz, max_coil_r, height, spacing, P):
     """
     Calculates the coefficient of variation for a circular coil
     --------------
@@ -216,7 +216,7 @@ def COV_circle(Bz, max_coil_r, height, P):
     """
     cp = len(Bz)  # Calculation domain
 
-    calc_radius = max_coil_r * P  # Calculation domain length
+    calc_radius = max_coil_r * spacing  # Calculation domain length
     cell_size = (2 * calc_radius) / (cp - 1)
 
     view_plane = calculation_plane(cell_size=cell_size,
@@ -233,7 +233,7 @@ def COV_circle(Bz, max_coil_r, height, P):
     return COV
 
 
-def COV_rectangle(Bz, X_side, Y_side, height, P):
+def COV_square(Bz, X_side, Y_side, height, spacing, P):
     """
     Calculates the coefficient of variation for a rectangle coil
     ---------------
@@ -247,7 +247,7 @@ def COV_rectangle(Bz, X_side, Y_side, height, P):
     """
     cp = len(Bz)
 
-    calc_radius = 0.5 * max([X_side, Y_side]) * P
+    calc_radius = 0.5 * max([X_side, Y_side]) * spacing
     cell_size = 2 * calc_radius / (cp - 1)
     view_plane = calculation_plane(cell_size=cell_size,
                                    height=height,
@@ -269,7 +269,7 @@ def COV_rectangle(Bz, X_side, Y_side, height, P):
     return COV
 
 
-def COV_piecewise_linear(Bz, coords, height, P):
+def COV_piecewise_linear(Bz, coords, height, spacing, P):
     """
     Calculates the coefficient of variation for a square coil
     ---------------
@@ -286,7 +286,7 @@ def COV_piecewise_linear(Bz, coords, height, P):
     for i in range(len(coords)):
         l.append(np.sqrt((coords[i][0]) ** 2 + (coords[i][1]) ** 2))
 
-    calc_radius = max(l) * P
+    calc_radius = max(l) * spacing
     cell_size = 2 * calc_radius / (cp - 1)
 
     view_plane = calculation_plane(cell_size=cell_size,

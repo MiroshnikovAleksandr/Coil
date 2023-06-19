@@ -30,7 +30,7 @@ material = 'Copper'
 D = 0.002
 P = 0.9
 spacing = 1.5
-cp = 200
+cp = 90
 height = 0.08
 # split_R = split(R, freq)
 # print(R, '\n', split_R)

@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from Bz_Field import Radii_in_coords, Radii_in_sides_rectangle
+from Bz_Field import Radii_in_coords, Radii_in_sides_square
 
 
 def transposition(xv, yv, zv):
@@ -66,7 +66,7 @@ def plot_coil(a_max, spacing, R):
     @param spacing: Spacing between coil and the calculation domain boundary
     @param R: Set of radii
     """
-    fig = plt.figure(figsize=(3, 3), dpi=100)
+    fig = plt.figure(figsize=(5, 5), dpi=100)
 
     ax = fig.subplots()
     ax.set_xlim((-a_max * spacing, a_max * spacing))
@@ -92,9 +92,9 @@ def plot_square_coil(m_max, n_max, spacing, R):
     @param spacing: Spacing between coil and the calculation domain boundary
     @param R: Set of radii
     """
-    m_i, n_i = Radii_in_sides_rectangle(R, m_max, n_max)
+    m_i, n_i = Radii_in_sides_square(R, m_max, n_max)
 
-    fig = plt.figure(figsize=(3, 3), dpi=100)
+    fig = plt.figure(figsize=(5, 5), dpi=100)
     ax = fig.subplots()
     max_size = np.max([m_max, n_max]) * spacing
 
