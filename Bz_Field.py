@@ -3,25 +3,6 @@ import math
 from scipy.special import ellipk,ellipkm1, ellipe
 
 
-def transposition(xv, yv, zv):
-    """
-    Transposes a three-dimensional array at a fixed third index
-    ---------------
-    """
-    cp = len(xv)
-
-    xv_T = np.zeros((cp, cp, cp))
-    yv_T = np.zeros((cp, cp, cp))
-    zv_T = np.zeros((cp, cp, cp))
-
-    for i in range(cp):
-        xv_T[:, :, i] = xv[:, :, i].T
-        yv_T[:, :, i] = yv[:, :, i].T
-        zv_T[:, :, i] = zv[:, :, i].T
-
-    return xv_T, yv_T, zv_T
-
-
 def prop_coeff(R):
     """
     Calculates the radius reduction factor
@@ -106,8 +87,6 @@ def Bz_segment(start_point, end_point, I, cp, calc_radius):
 
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)
-
-    # xv, yv, zv = transposition(xv, yv, zv)
 
     if x1 != x2 and y1 != y2:
 
@@ -269,7 +248,6 @@ def Bz_square_single(m, n, I, cp, calc_radius):
     mu0 = np.pi * 4e-7
     x = np.linspace(-calc_radius, calc_radius, cp)
     xv, yv, zv = np.meshgrid(x, x, x)  # Creating meshgrid
-    # xv, yv, zv = transposition(xv, yv, zv)
 
     C = mu0 * I / (4 * np.pi)
 

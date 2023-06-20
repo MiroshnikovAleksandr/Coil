@@ -2,8 +2,6 @@ import numpy as np
 import math
 import copy
 
-import Bz_Field
-
 
 def dist(x1, y1, x2, y2):
     """
@@ -24,41 +22,41 @@ def if_one(cut, S=0):
         elif cut[j] == 1 and cut[j + 1] != 1:
             return S
 
+
 def index_of_element(array, element):
     for index in range(len(array)):
         if array[index] == element:
             return index
 
 
-def mask_circular(tiles, cx, cy, r):
+def mask_circular(tiles, r):
     """
     Creates a circular binary mask
     ---------------
     @param tiles: Zero two-dimensional array
-    @param cx, cy: Center of the calculation domain
     @param r: Radius of the calculation domain is in points
     @return: A circular binary mask
     """
-    for x in range(cx - r, cx + r):
-        for y in range(cy - r, cy + r):
-            if dist(cx, cy, x, y) <= r:
-                tiles[x][y] = 1
+    half_cp = len(tiles) // 2
+    for x in range(half_cp - r, half_cp + r):
+        for y in range(half_cp - r, half_cp + r):
+            if dist(half_cp, half_cp, x, y) <= r:
+                tiles[y][x] = 1
 
 
-def mask_square(tiles, cx, cy, X_side, Y_side):
+def mask_rectangle(tiles, X_side, Y_side):
     """
-    Creates a square binary mask
+    Creates a rectangle binary mask
     ---------------
     @param tiles: Zero two-dimensional array
-    @param cx, cy: Center of the calculation domain
-    @param max_side: The largest side of the calculation domain is in points
-    @param min_side: The smallest side of the calculation domain is in points
-    @return: A square binary mask
+    @param X_side: Half the side parallel to the x-axis of the calculation domain is in points
+    @param Y_side: Half the side parallel to the y-axis of the calculation domain is in points
+    @return: A rectangle binary mask
     """
-    for x in range(cx - X_side, cx + X_side + 1):
-        for y in range(cy - Y_side, cy + Y_side + 1):
+    half_cp = len(tiles) // 2
+    for x in range(half_cp - X_side, half_cp + X_side + 1):
+        for y in range(half_cp - Y_side, half_cp + Y_side + 1):
             tiles[y][x] = 1
-
 
 
 def mask_piecewise_linear(tiles, coords):
@@ -198,141 +196,12 @@ def mask_piecewise_linear(tiles, coords):
                 tiles[index_y + 1][x] = 0
 
 
-# def mask_piecewise_linear(tiles, coords):
-#     """
-#     Creates a piecewise linear binary mask
-#     --------------
-#     @param tiles: Zero two-dimensional array
-#     @param coords: Coordinate indexes
-#     @return: A piecewise linear mask
-#     """
-#     for i in range(len(coords)):
-#         try:
-#             x1, y1 = coords[i][0], coords[i][1]
-#             x2, y2 = coords[i + 1][0], coords[i + 1][1]
-#             X = []
-#             Y = []
-#             if y1 > y2:
-#                 for y in range(y2, y1 + 1):
-#                     Y.append(y)
-#             elif y1 <= y2:
-#                 for y in range(y1, y2 + 1):
-#                     Y.append(y)
-#             if x1 > x2:
-#                 for x in range(x2, x1 + 1):
-#                     X.append(x)
-#             elif x1 <= x2:
-#                 for x in range(x1, x2 + 1):
-#                     X.append(x)
-#             if len(X) == 1:
-#                 x = x1
-#                 for y in Y:
-#                     tiles[x][y] = 1
-#             elif len(Y) == 1:
-#                 y = y1
-#                 for x in X:
-#                     tiles[x][y] = 1
-#             else:
-#                 if len(X) > len(Y):
-#                     Y.clear()
-#                     k = (y2 - y1) / (x2 - x1)
-#                     b = y1 - k * x1
-#                     for x in X:
-#                         Y.append(round(k * x + b))
-#                 elif len(Y) > len(X):
-#                     X.clear()
-#                     k = (y2 - y1) / (x2 - x1)
-#                     b = y1 - k * x1
-#                     for y in Y:
-#                         X.append(round((y - b) / k))
-#                 for x, y in zip(X, Y):
-#                     tiles[x][y] = 1
-#             X.clear()
-#             Y.clear()
-#         except IndexError:
-#             x1, y1 = coords[i][0], coords[i][1]
-#             x2, y2 = coords[0][0], coords[0][1]
-#             X = []
-#             Y = []
-#             if y1 > y2:
-#                 for y in range(y2, y1 + 1):
-#                     Y.append(y)
-#             elif y1 <= y2:
-#                 for y in range(y1, y2 + 1):
-#                     Y.append(y)
-#             if x1 > x2:
-#                 for x in range(x2, x1 + 1):
-#                     X.append(x)
-#             elif x1 <= x2:
-#                 for x in range(x1, x2 + 1):
-#                     X.append(x)
-#             if len(X) == 1:
-#                 x = x1
-#                 for y in Y:
-#                     tiles[x][y] = 1
-#             elif len(Y) == 1:
-#                 y = y1
-#                 for x in X:
-#                     tiles[x][y] = 1
-#             else:
-#                 if len(X) > len(Y):
-#                     Y.clear()
-#                     k = (y2 - y1) / (x2 - x1)
-#                     b = y1 - k * x1
-#                     for x in X:
-#                         Y.append(round(k * x + b))
-#                 elif len(Y) > len(X):
-#                     X.clear()
-#                     k = (y2 - y1) / (x2 - x1)
-#                     b = y1 - k * x1
-#                     for y in Y:
-#                         X.append(round((y - b) / k))
-#                 for x, y in zip(X, Y):
-#                     tiles[x][y] = 1
-#             X.clear()
-#             Y.clear()
-#
-#     for y in range(len(tiles)):
-#         cut = tiles[:, y]
-#         indexes_contour, indexes_vertexes, indexes_rib = [], [], []
-#         for x in range(len(cut) - 1):
-#             if cut[x] == 1:
-#                 indexes_contour.append(x)
-#                 if ([x, y] in coords) and (cut[x + 1] != 1) and (cut[x - 1] != 1):
-#                     index = index_of_element(coords, [x, y])
-#                     if (index < len(coords) - 1) and (index > 0):
-#                         if ((y < coords[index + 1][1]) and (y < coords[index - 1][1])) or (
-#                                 (y > coords[index + 1][1]) and (y > coords[index - 1][1])):
-#                             indexes_vertexes.append(x)
-#                     else:
-#                         if ((y < coords[0][1]) and (y < coords[len(coords) - 1][1])) or (
-#                                 (y > coords[0][1]) and (y > coords[len(coords) - 1][1])):
-#                             indexes_vertexes.append(x)
-#                 elif ([x, y] in coords) and (cut[x + 1] == 1):
-#                     last_one = x + 1 + if_one(cut[x + 1:])
-#                     for i in range(x, last_one):
-#                         indexes_rib.append(i)
-#         for element in indexes_vertexes:
-#             indexes_contour.remove(element)
-#         for element in indexes_rib:
-#             indexes_contour.remove(element)
-#
-#         for index in range(0, len(indexes_contour) - 1, 2):
-#             for x in range(indexes_contour[index] + 1, indexes_contour[index + 1]):
-#                 tiles[x][y] = 1
-#         indexes_contour.clear()
-#         indexes_vertexes.clear()
-#         indexes_rib.clear()
-#
-#     for x in range(len(tiles - 1)):
-#         cut = tiles[x, :]
-#
-#         for index_y in range(len(cut) - 2):
-#             if cut[index_y] == 1 and cut[index_y + 1] == 0 and cut[index_y + 2] == 1:
-#                 tiles[x][index_y + 1] = 1
-#             elif cut[index_y] == 0 and cut[index_y + 1] == 1 and cut[index_y + 2] == 0 and (
-#                     [x, index_y + 1] not in coords):
-#                 tiles[x][index_y + 1] = 0
+def calculation_plane(cell_size, height, cp):
+    """"""
+    if height < cell_size:
+        return int(cp / 2 + 1)
+    else:
+        return int(height / cell_size + cp / 2)
 
 
 def COV_circle(Bz, max_coil_r, height, spacing, P):
@@ -342,34 +211,31 @@ def COV_circle(Bz, max_coil_r, height, spacing, P):
     @param Bz: Field for calculating the COV
     @param max_coil_r: The largest radius of a circular coil [m]
     @param height: Height above the coil [m]
-    @param spacing: Spacing between coil and the calculation domain boundary
     @param P: The boundary of the calculation of the COV
     @return: COV
     """
-    calc_radius = max_coil_r * spacing  # Calculation domain length
-
-    view_plane = int(height / (2 * calc_radius / len(Bz)) + len(Bz) / 2)
-
     cp = len(Bz)  # Calculation domain
-    cx = cp // 2  # center of calc area
-    cy = cp // 2
-    cell_size = (2 * calc_radius) / cp
-    tiles = np.zeros([cp, cp])
-    r_cov_m = max_coil_r * P  # Uniform area
-    r_cov = round(r_cov_m / cell_size)  # Uniform area in cells
-    mask_circular(tiles, cx, cy, r_cov)
+
+    calc_radius = max_coil_r * spacing  # Calculation domain length
+    cell_size = (2 * calc_radius) / (cp - 1)
+
+    view_plane = calculation_plane(cell_size=cell_size,
+                                   height=height,
+                                   cp=cp)
+
+    tiles = np.zeros((cp, cp))
+    r_cov = round(max_coil_r * P / cell_size)  # Uniform area in cells
+    mask_circular(tiles, r_cov)
     Bz_masked = np.multiply(Bz[:, :, view_plane], tiles)
     B_mean = np.sum(Bz_masked) / np.sum(tiles)
     B_std = np.sqrt(np.sum((Bz_masked - np.multiply(B_mean, tiles)) ** 2) / np.sum(tiles))
     COV = B_std / B_mean
     return COV
 
-Bz = Bz_Field.Bz_circular_contour(R=[0.08, 0.008], I=1, spacing=1.5, cp=30)
-print(COV_circle(Bz=Bz, max_coil_r=0.08, height=0.015, spacing=1.5, P=0.9))
 
 def COV_square(Bz, X_side, Y_side, height, spacing, P):
     """
-    Calculates the coefficient of variation for a square coil
+    Calculates the coefficient of variation for a rectangle coil
     ---------------
     @param Bz: Field for calculating the COV
     @param X_side: Side parallel to the x-axis
@@ -380,18 +246,18 @@ def COV_square(Bz, X_side, Y_side, height, spacing, P):
     @return: COV
     """
     cp = len(Bz)
-    cx = cp // 2
-    cy = cp // 2
 
     calc_radius = 0.5 * max([X_side, Y_side]) * spacing
-    cell_size = 2 * calc_radius / cp
-    view_plane = int(height / cell_size + cp / 2)
+    cell_size = 2 * calc_radius / (cp - 1)
+    view_plane = calculation_plane(cell_size=cell_size,
+                                   height=height,
+                                   cp=cp)
     tiles = np.zeros((cp, cp))
 
     X_side_COV = round(X_side * P / cell_size)
     Y_side_COV = round(Y_side * P / cell_size)
 
-    mask_square(tiles, cx, cy, X_side_COV // 2, Y_side_COV // 2)
+    mask_rectangle(tiles, X_side_COV // 2, Y_side_COV // 2)
 
     Bz_masked = np.multiply(Bz[:, :, view_plane], tiles)
 
@@ -415,25 +281,25 @@ def COV_piecewise_linear(Bz, coords, height, spacing, P):
     @return: COV
     """
     cp = len(Bz)
-    cx = cp // 2
-    cy = cp // 2
 
     l = []
     for i in range(len(coords)):
         l.append(np.sqrt((coords[i][0]) ** 2 + (coords[i][1]) ** 2))
 
     calc_radius = max(l) * spacing
-    cell_size = 2 * calc_radius / cp
+    cell_size = 2 * calc_radius / (cp - 1)
 
-    view_plane = int(height / cell_size + cp / 2)
+    view_plane = calculation_plane(cell_size=cell_size,
+                                   height=height,
+                                   cp=cp)
     tiles = np.zeros((cp, cp))
 
     coords_COV = []
-    for i in coords:
-        coords_COV.append([round(cx + i[0] * P / cell_size), round(cy + i[1] * P / cell_size)])
+    for point in coords:
+        coords_COV.append([round(cp // 2 + point[0] * P / cell_size), round(cp // 2 + point[1] * P / cell_size)])
 
     mask_piecewise_linear(tiles, coords_COV)
-    Bz_masked = np.multiply(tiles, Bz[view_plane, :, :])
+    Bz_masked = np.multiply(tiles, Bz[:, :, view_plane])
     Bz_mean = np.sum(Bz_masked) / np.sum(tiles)
     Bz_std = np.sqrt((np.sum((Bz_masked - np.multiply(Bz_mean, tiles)) ** 2)) / (np.sum(tiles)))
     COV = Bz_std / Bz_mean
