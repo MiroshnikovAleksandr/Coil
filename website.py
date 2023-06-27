@@ -108,6 +108,7 @@ with st.sidebar:
 
     st.header("Электрические параметры")
 
+    variable, size = st.columns([3, 1])
     with variable:
         frequency = st.number_input('Частота, [МГц]', value=(parameters['geom']['freq'] / (10 ** 6)))
         I = st.number_input('Сила тока [A]', value=parameters['geom']['I'])
