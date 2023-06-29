@@ -12,6 +12,7 @@ import COV
 import Resistance
 import tomli
 import Field_functions as ff
+import time
 
 # from scoop import futures
 # import multiprocessing
@@ -53,8 +54,8 @@ class Genetic:
         self.X_side = params['geom']['X_side']
         self.Y_side = params['geom']['Y_side']
         if self.figure == 'Rectangle':
-            self.a_max = max(self.X_side, self.Y_side)/2
-            self.a_min = self.a_max/10
+            self.a_max = max(self.X_side, self.Y_side) / 2
+            self.a_min = self.a_max / 10
         else:
             self.a_max = params['geom']['a_max']
             self.a_min = params['geom']['a_min']
@@ -78,7 +79,7 @@ class Genetic:
         """
         toolbox.register("ZeroOrOne", random.randint, 0, 1)
         toolbox.register("individual", tools.initRepeat, creator.Individual,
-                         toolbox.ZeroOrOne, random.randint(50, 5*self.a_max//self.minimal_gap))
+                         toolbox.ZeroOrOne, random.randint(50, 5 * self.a_max // self.minimal_gap))
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
         self.pop = toolbox.population(n=self.population_size)
@@ -306,10 +307,13 @@ class Genetic:
         print(self.decode_all_x(self.hall_of_fame[0]))
 
 
+# start = time.time()
 # GA = Genetic(parameters)
 # GA.preparation()
 # GA.execution()
 # GA.show()
+# total = time.time() - start
+# print(f'{total} s')
 # for i in range(50, 101, 10):
 #     no_of_generations = i
 #     GA = Genetic(parameters)
