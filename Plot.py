@@ -94,9 +94,9 @@ def plot_square_coil(m_max, n_max, spacing, R):
     """
     m_i, n_i = Radii_in_sides_square(R, m_max, n_max)
 
-    fig = plt.figure(figsize=(5, 5), dpi=100)
+    fig = plt.figure(figsize=(6, 6), dpi=100)
     ax = fig.subplots()
-    max_size = np.max([m_max, n_max]) * spacing
+    max_size = 0.5 * np.max([m_max, n_max]) * spacing
 
     ax.set_xlim((-max_size, max_size))
     ax.set_ylim((-max_size, max_size))

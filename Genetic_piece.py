@@ -9,11 +9,9 @@ import pandas as pd
 import numpy as np
 
 import Bz_Field
-import Bz_Field as Bz
 import COV
 import Resistance
 import tomli
-import Field_functions as ff
 
 # from scoop import futures
 # import multiprocessing
@@ -279,14 +277,9 @@ class Genetic_piecewise:
         print(self.decode_all_x(self.hall_of_fame[0]))
 
 
-<<<<<<<< HEAD:DEAP_Field_refactored.py
-GA = Genetic(parameters)
-GA.preparation()
-========
 GA = Genetic_piecewise(parameters)
 GA.preparation()
 GA.minimal_side()
->>>>>>>> a5306c9 (A lot of fixes):Genetic_piece.py
 GA.execution()
 GA.show()
 # for i in range(50, 101, 10):
