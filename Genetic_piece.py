@@ -53,8 +53,8 @@ class Genetic_piecewise:
         self.X_side = params['geom']['X_side']
         self.Y_side = params['geom']['Y_side']
         if self.figure == 'Rectangle':
-            self.a_max = max(self.X_side, self.Y_side)/2
-            self.a_min = self.a_max/10
+            self.a_max = max(self.X_side, self.Y_side) / 2
+            self.a_min = self.a_max / 10
         else:
             self.a_max = params['geom']['a_max']
             self.a_min = params['geom']['a_min']
@@ -81,7 +81,7 @@ class Genetic_piecewise:
         """
         toolbox.register("ZeroOrOne", random.randint, 0, 1)
         toolbox.register("individual", tools.initRepeat, creator.Individual,
-                         toolbox.ZeroOrOne, random.randint(50, 5*self.a_max//self.minimal_gap))
+                         toolbox.ZeroOrOne, random.randint(50, 5 * self.a_max // self.minimal_gap))
         toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 
         self.pop = toolbox.population(n=self.population_size)
@@ -94,10 +94,11 @@ class Genetic_piecewise:
         sides = [(self.coords[i], self.coords[i + 1]) for i in range(len(self.coords) - 1)]
         sides.append((self.coords[-1], self.coords[0]))
         sorted_sides = sorted(sides,
-                              key=lambda x: np.sqrt((x[0][0] - x[1][0])**2 + (x[0][1] - x[1][1])**2))
+                              key=lambda x: np.sqrt((x[0][0] - x[1][0]) ** 2 + (x[0][1] - x[1][1]) ** 2))
         self.min_side = sorted_sides[0]
         self.k = (self.min_side[0][1] - self.min_side[1][1]) / (self.min_side[0][0] - self.min_side[1][0])
-        self.bounds_const = np.sqrt(1 + self.k**2) / (abs(self.k*(self.min_side[0][1] - self.k*self.min_side[0][0])))
+        self.bounds_const = np.sqrt(1 + self.k ** 2) / (
+            abs(self.k * (self.min_side[0][1] - self.k * self.min_side[0][0])))
 
     def bounds_fn(self, ind):
         ind = [0] * (self.len_of_turn - (len(ind) % self.len_of_turn)) + ind
@@ -128,7 +129,7 @@ class Genetic_piecewise:
         coeffs = [x * precision + Min for x in array_of_chromosomes_one_decimal_sorted]
 
         for i in range(1, len(coeffs)):
-            bounds.append((Min, coeffs[i - 1] - self.minimal_gap*self.bounds_const))
+            bounds.append((Min, coeffs[i - 1] - self.minimal_gap * self.bounds_const))
 
         return [sorted_individual, bounds]
 
@@ -160,6 +161,21 @@ class Genetic_piecewise:
             bound_index += 1
 
         return x
+
+    def determine_Bz(self, individual):
+        return Bz.Bz_piecewise_linear_contour(R=self.decode_all_x(individual),
+                                              coords=self.coords,
+                                              I=self.I,
+                                              spacing=self.spacing,
+                                              cp=self.cp,
+                                              direction=False)
+
+    def determine_COV(self, bz):
+        return COV.COV_piecewise_linear(Bz=bz,
+                                        coords=self.coords,
+                                        height=self.height,
+                                        spacing=self.spacing,
+                                        P=self.calculation_area)
 
     def objective_fxn(self, individual):
         """
@@ -199,25 +215,18 @@ class Genetic_piecewise:
         @return: float
         """
         coil = self.decode_all_x(ind)
-        if self.figure == 'Circular':
-            l = 2 * math.pi * np.sum(np.array(coil))
-            return l
-        elif self.figure == 'Rectangle':
-            l = 2 * (self.X_side + self.Y_side) * np.sum(np.array(coil)) / max(coil)
-            return l
-        elif self.figure == 'Piecewise':
-            coords_ = Bz.Radii_in_coords(coil, self.coords)
-            l = 0
-            coords = []
-            for i in range(len(coords_)):
-                for j in range(len(coords_[i])):
-                    coords.append(coords_[i][j])
-            for i in range(len(coords)):
-                try:
-                    l += np.sqrt((coords[i][0] - coords[i + 1][0]) ** 2 + (coords[i][1] - coords[i + 1][1]) ** 2)
-                except IndexError:
-                    l += np.sqrt((coords[0][0] - coords[i][0]) ** 2 + (coords[0][1] - coords[i][1]) ** 2)
-            return l
+        coords_ = Bz.Radii_in_coords(coil, self.coords)
+        l = 0
+        coords = []
+        for i in range(len(coords_)):
+            for j in range(len(coords_[i])):
+                coords.append(coords_[i][j])
+        for i in range(len(coords)):
+            try:
+                l += np.sqrt((coords[i][0] - coords[i + 1][0]) ** 2 + (coords[i][1] - coords[i + 1][1]) ** 2)
+            except IndexError:
+                l += np.sqrt((coords[0][0] - coords[i][0]) ** 2 + (coords[0][1] - coords[i][1]) ** 2)
+        return l
 
     def check_feasibility(self, ind):
         """
@@ -275,7 +284,6 @@ class Genetic_piecewise:
         """
         print(self.hall_of_fame[0])
         print(self.decode_all_x(self.hall_of_fame[0]))
-
 
 # GA = Genetic_piecewise(parameters)
 # GA.preparation()
