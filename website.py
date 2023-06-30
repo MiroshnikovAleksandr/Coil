@@ -38,8 +38,7 @@ def changeSize(var, size):
         return var / 100
     if size == 'мм':
         return var / 1000
-    else:
-        return var
+
 
 
 with open('parameters.toml', 'rb') as toml:
@@ -67,9 +66,9 @@ with st.sidebar:
 
     if form == 'прямоугольная':
         with variable:
-            length = st.number_input('Длина, м', value=parameters['geom']['X_side'])
-            width = st.number_input('Ширина, м', value=parameters['geom']['Y_side'])
-            h = st.number_input('Высота, м', value=parameters['geom']['height'])
+            length = st.number_input('Длина', value=parameters['geom']['X_side'])
+            width = st.number_input('Ширина', value=parameters['geom']['Y_side'])
+            h = st.number_input('Высота', value=parameters['geom']['height'])
         with size:
             size_l = st.selectbox("", ('м', 'см', 'мм'))
             size_w = st.selectbox(" ", ('м', 'см', 'мм'))
@@ -78,7 +77,7 @@ with st.sidebar:
     if form == 'кусочно-линейная':
         variable, size = st.columns([3, 1])
         with variable:
-            h = st.number_input('Высота, м', value=parameters['geom']['height'])
+            h = st.number_input('Высота', value=parameters['geom']['height'])
         with size:
             size_h = st.selectbox("  ", ('м', 'см', 'мм'))
 
@@ -149,7 +148,7 @@ if do:
         width = changeSize(width, size_w)
         parameters['geom']['Y_side'] = width
     if h > 0.0:
-        h = changeSize(h, size)
+        h = changeSize(h, size_h)
         parameters['geom']['height'] = h
     if form == 'круглая':
         parameters['geom']['figure'] = 'Circular'
