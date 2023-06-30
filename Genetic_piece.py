@@ -185,7 +185,7 @@ class Genetic_piecewise:
         @return: list, containing the COV
         """
         coords = self.decode_all_x(individual)
-        bz = Bz_Field.Bz_piecewise_linear_contour(R=coords, coords=self.coords, I=self.I,
+        bz = Bz.Bz_piecewise_linear_contour(R=coords, coords=self.coords, I=self.I,
                                                   spacing=self.spacing, cp=self.cp)
         cov = COV.COV_piecewise_linear(Bz=bz, coords=self.coords,
                                        height=self.height, spacing=self.spacing, P=self.calculation_area)
