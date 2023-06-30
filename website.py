@@ -11,6 +11,7 @@ from DEAP_Field_refactored import Genetic
 from turns_splitter import split
 import Plot
 import Bz_Field
+import Bz_Field as Bz
 from Genetic_rect import GeneticRectangle
 from Genetic_piece import Genetic_piecewise
 
@@ -161,7 +162,7 @@ if do:
     if population_size > 0.0:
         parameters['gen']['population_size'] = population_size
     if probability_of_mutation > 0.0:
-        parameters['gen']['probability_of_mutation'] > 0.0
+        parameters['gen']['probability_of_mutation'] = probability_of_mutation
     if tournSel_k > 0.0:
         parameters['gen']['tournSel_k'] = tournSel_k
     if CXPB > 0.0:

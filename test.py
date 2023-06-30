@@ -7,8 +7,8 @@
 # bz = Bz_Field.Bz_square_contour(R, 2, 2, 1, 1.5, 30)
 # # Plot.plot_2d(bz, 0.015, max(R), 1.5, 30)
 # Plot.plot_3d(bz, 0.015, max(R), 1.5, 30)
-# import os
-# os.system('cmd /c "streamlit run website.py"')
+import os
+os.system('cmd /c "streamlit run website.py"')
 
 
 # from random import randint
