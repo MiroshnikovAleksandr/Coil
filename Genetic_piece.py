@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
-import Bz_Field
+import Bz_Field as Bz
 import COV
 import Resistance
 import tomli
