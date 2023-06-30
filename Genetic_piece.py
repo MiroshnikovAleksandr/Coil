@@ -52,12 +52,12 @@ class Genetic_piecewise:
         self.figure = params['geom']['figure']
         self.X_side = params['geom']['X_side']
         self.Y_side = params['geom']['Y_side']
-        if self.figure == 'Rectangle':
-            self.a_max = max(self.X_side, self.Y_side) / 2
-            self.a_min = self.a_max / 10
-        else:
-            self.a_max = params['geom']['a_max']
-            self.a_min = params['geom']['a_min']
+        # if self.figure == 'Rectangle':
+        #     self.a_max = max(self.X_side, self.Y_side) / 2
+        #     self.a_min = self.a_max / 10
+        # else:
+        #     self.a_max = params['geom']['a_max']
+        #     self.a_min = params['geom']['a_min']
         self.I = params['geom']['I']
         self.spacing = params['geom']['spacing']
         self.cp = params['geom']['cp']
