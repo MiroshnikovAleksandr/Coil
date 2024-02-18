@@ -33,7 +33,7 @@ class GeneticRectangle:
         self.CXPB = params['gen']['CXPB']
         self.MUTPB = params['gen']['MUTPB']
 
-        self.figure = params['geom']['figure']
+        self.figure = 'Rectangle'
         self.X_side = params['geom']['X_side']
         self.Y_side = params['geom']['Y_side']
         self.L = min(self.X_side, self.Y_side)
@@ -115,20 +115,22 @@ class GeneticRectangle:
         return x
 
     def determine_Bz(self, individual):
-        return Bz.Bz_square_contour(R=self.decode_all_x(individual),
-                                    X_side=self.X_side,
-                                    Y_side=self.Y_side,
-                                    I=self.I,
-                                    spacing=self.spacing,
-                                    cp=self.cp)
+        return Bz_Field.Bz_square_contour \
+            (R=self.decode_all_x(individual),
+             X_side=self.X_side,
+             Y_side=self.Y_side,
+             I=self.I,
+             spacing=self.spacing,
+             cp=self.cp,
+             height=self.height)
 
     def determine_COV(self, bz):
-        return COV.COV_square(Bz=bz,
-                              X_side=self.X_side,
-                              Y_side=self.Y_side,
-                              height=self.height,
-                              spacing=self.spacing,
-                              P=self.calculation_area)
+        return COV.COV_square \
+            (Bz=bz,
+             X_side=self.X_side,
+             Y_side=self.Y_side,
+             spacing=self.spacing,
+             P=self.calculation_area)
 
     def objective_fxn(self, individual):
         """
@@ -137,11 +139,8 @@ class GeneticRectangle:
         @param individual: creator.Individual
         @return: list, containing the COV
         """
-        sides = self.decode_all_x(individual)
-        bz = Bz_Field.Bz_square_contour(R=sides, X_side=self.X_side, Y_side=self.Y_side,
-                                        I=self.I, spacing=self.spacing, cp=self.cp)
-        cov = COV.COV_square(Bz=bz, X_side=self.X_side, Y_side=self.Y_side,
-                             height=self.height, spacing=self.spacing, P=self.calculation_area)
+        bz = self.determine_Bz(individual)
+        cov = self.determine_COV(bz)
 
         obj_function_value = cov
         return [obj_function_value]

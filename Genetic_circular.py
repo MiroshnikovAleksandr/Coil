@@ -1,39 +1,29 @@
-from deap import base, algorithms
-from deap import creator
-from deap import tools
 import random
 import sys
 import math
+import time
+
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-import Bz_Field as Bz
+import tomli
+
+
+import Bz_Field
 import COV
 import Resistance
-import tomli
-import Field_functions as ff
-import time
-
-# from scoop import futures
-# import multiprocessing
-
-# seed = 4090899410329119572
-# random.seed(seed)
-
-with open('parameters.toml', 'rb') as toml:
-    parameters = tomli.load(toml)
-
-toolbox = base.Toolbox()  # create toolbox for genetic algorithm
-
-# toolbox.register("map", futures.map)
-# pool = multiprocessing.Pool()
-# toolbox.register("map", pool.map)
-
-creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
-creator.create("Individual", list, fitness=creator.FitnessMin)
+import Plot
 
 
-class Genetic:
+from deap import base, algorithms
+from deap import creator
+from deap import tools
+from COV import COV_circle, COV_square, COV_piecewise_linear
+from utilities import index_of_element, Radii_in_coords
+
+
+class Genetic_circular:
     """
     This class describes the genetic algorithm.
     """
@@ -50,15 +40,11 @@ class Genetic:
         self.CXPB = params['gen']['CXPB']
         self.MUTPB = params['gen']['MUTPB']
 
-        self.figure = params['geom']['figure']
+        self.figure = 'Circular'
         self.X_side = params['geom']['X_side']
         self.Y_side = params['geom']['Y_side']
-        if self.figure == 'Rectangle':
-            self.a_max = max(self.X_side, self.Y_side) / 2
-            self.a_min = self.a_max / 10
-        else:
-            self.a_max = params['geom']['a_max']
-            self.a_min = params['geom']['a_min']
+        self.a_max = params['geom']['a_max']
+        self.a_min = params['geom']['a_min']
         self.I = params['geom']['I']
         self.spacing = params['geom']['spacing']
         self.cp = params['geom']['cp']
@@ -151,48 +137,19 @@ class Genetic:
         return x
 
     def determine_Bz(self, individual):
-        if self.figure == 'Circular':
-            return ff.Bz(self.a_max, self.a_min, 2, self.I, self.spacing, self.cp, self.decode_all_x(individual))
-            # return Bz.Bz_circular_contour(R=self.decode_all_x(individual),
-            #                               I=self.I,
-            #                               spacing=self.spacing,
-            #                               cp=self.cp)
-        elif self.figure == 'Rectangle':
-            return Bz.Bz_square_contour(R=self.decode_all_x(individual),
-                                        X_side=self.X_side,
-                                        Y_side=self.Y_side,
-                                        I=self.I,
-                                        spacing=self.spacing,
-                                        cp=self.cp)
-        elif self.figure == 'Piecewise':
-            return Bz.Bz_piecewise_linear_contour(R=self.decode_all_x(individual),
-                                                  coords=self.coords,
-                                                  I=self.I,
-                                                  spacing=self.spacing,
-                                                  cp=self.cp,
-                                                  direction=False)
+        return Bz_Field.Bz_circular_contour\
+                (R=self.decode_all_x(individual),
+                 I=self.I,
+                 spacing=self.spacing,
+                 cp=self.cp,
+                 height=self.height)
 
     def determine_COV(self, bz):
-        if self.figure == 'Circular':
-            return ff.COV_circ(bz, self.a_max, self.height, self.spacing)
-            # return COV.COV_circle(Bz=bz,
-            #                       max_coil_r=self.a_max,
-            #                       height=self.height,
-            #                       spacing=self.spacing,
-            #                       P=self.calculation_area)
-        elif self.figure == 'Rectangle':
-            return COV.COV_square(Bz=bz,
-                                  X_side=self.X_side,
-                                  Y_side=self.Y_side,
-                                  height=self.height,
-                                  spacing=self.spacing,
-                                  P=self.calculation_area)
-        elif self.figure == 'Piecewise':
-            return COV.COV_piecewise_linear(Bz=bz,
-                                            coords=self.coords,
-                                            height=self.height,
-                                            spacing=self.spacing,
-                                            P=self.calculation_area)
+        return COV.COV_circle\
+                (Bz=bz,
+                 max_coil_r=self.a_max,
+                 spacing=self.spacing,
+                 P=self.calculation_area)
 
     def objective_fxn(self, individual):
         """
@@ -236,7 +193,7 @@ class Genetic:
             l = 2 * (self.X_side + self.Y_side) * np.sum(np.array(coil)) / max(coil)
             return l
         elif self.figure == 'Piecewise':
-            coords_ = Bz.Radii_in_coords(coil, self.coords)
+            coords_ = Radii_in_coords(coil, self.coords)
             l = 0
             coords = []
             for i in range(len(coords_)):
@@ -305,19 +262,3 @@ class Genetic:
         """
         print(self.hall_of_fame[0])
         print(self.decode_all_x(self.hall_of_fame[0]))
-
-
-# start = time.time()
-# GA = Genetic(parameters)
-# GA.preparation()
-# GA.execution()
-# GA.show()
-# total = time.time() - start
-# print(f'{total} s')
-# for i in range(50, 101, 10):
-#     no_of_generations = i
-#     GA = Genetic(parameters)
-#     GA.preparation()
-#     GA.execution()
-#     GA.show()
-# plt.show()

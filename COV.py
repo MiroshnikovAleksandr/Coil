@@ -1,17 +1,7 @@
 import numpy as np
 import math
 import copy
-
-
-def dist(x1, y1, x2, y2):
-    """
-    Calculates the distance between two points
-    ---------------
-    @param x1, y1: Сoordinates of the first point
-    @param x2, y2: Coordinates of the second point
-    @return: The distance between two points
-    """
-    return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+from utilities import index_of_element
 
 
 def if_one(cut, S=0):
@@ -21,12 +11,6 @@ def if_one(cut, S=0):
             return if_one(cut[j + 1: len(cut)], S)
         elif cut[j] == 1 and cut[j + 1] != 1:
             return S
-
-
-def index_of_element(array, element):
-    for index in range(len(array)):
-        if array[index] == element:
-            return index
 
 
 def mask_circular(tiles, r):
@@ -40,7 +24,7 @@ def mask_circular(tiles, r):
     half_cp = len(tiles) // 2
     for x in range(half_cp - r, half_cp + r):
         for y in range(half_cp - r, half_cp + r):
-            if dist(half_cp, half_cp, x, y) <= r:
+            if math.sqrt((half_cp - x) ** 2 + (half_cp - y) ** 2) <= r:
                 tiles[y][x] = 1
 
 
@@ -204,7 +188,7 @@ def calculation_plane(cell_size, height, cp):
         return int(height / cell_size + cp / 2)
 
 
-def COV_circle(Bz, max_coil_r, height, spacing, P):
+def COV_circle(Bz, max_coil_r, spacing, P):
     """
     Calculates the coefficient of variation for a circular coil
     --------------
@@ -219,21 +203,17 @@ def COV_circle(Bz, max_coil_r, height, spacing, P):
     calc_radius = max_coil_r * spacing  # Calculation domain length
     cell_size = (2 * calc_radius) / (cp - 1)
 
-    view_plane = calculation_plane(cell_size=cell_size,
-                                   height=height,
-                                   cp=cp)
-
     tiles = np.zeros((cp, cp))
-    r_cov = round(max_coil_r * P / cell_size)  # Uniform area in cells
+    r_cov = round(max_coil_r * np.sqrt(P) / cell_size)  # Uniform area in cells
     mask_circular(tiles, r_cov)
-    Bz_masked = np.multiply(Bz[:, :, view_plane], tiles)
+    Bz_masked = np.multiply(Bz, tiles)
     B_mean = np.sum(Bz_masked) / np.sum(tiles)
     B_std = np.sqrt(np.sum((Bz_masked - np.multiply(B_mean, tiles)) ** 2) / np.sum(tiles))
     COV = B_std / B_mean
     return COV
 
 
-def COV_square(Bz, X_side, Y_side, height, spacing, P):
+def COV_square(Bz, X_side, Y_side, spacing, P):
     """
     Calculates the coefficient of variation for a rectangle coil
     ---------------
@@ -249,9 +229,6 @@ def COV_square(Bz, X_side, Y_side, height, spacing, P):
 
     calc_radius = 0.5 * max([X_side, Y_side]) * spacing
     cell_size = 2 * calc_radius / (cp - 1)
-    view_plane = calculation_plane(cell_size=cell_size,
-                                   height=height,
-                                   cp=cp)
     tiles = np.zeros((cp, cp))
 
     X_side_COV = round(X_side * P / cell_size)
@@ -259,7 +236,7 @@ def COV_square(Bz, X_side, Y_side, height, spacing, P):
 
     mask_rectangle(tiles, X_side_COV // 2, Y_side_COV // 2)
 
-    Bz_masked = np.multiply(Bz[:, :, view_plane], tiles)
+    Bz_masked = np.multiply(Bz, tiles)
 
     Bz_mean = np.sum(Bz_masked) / np.sum(tiles)
     Bz_std = np.sqrt(np.sum((np.multiply(Bz_mean, tiles) - Bz_masked) ** 2) / (np.sum(tiles)))
@@ -269,7 +246,7 @@ def COV_square(Bz, X_side, Y_side, height, spacing, P):
     return COV
 
 
-def COV_piecewise_linear(Bz, coords, height, spacing, P):
+def COV_piecewise_linear(Bz, coords, spacing, P):
     """
     Calculates the coefficient of variation for a square coil
     ---------------
@@ -288,10 +265,6 @@ def COV_piecewise_linear(Bz, coords, height, spacing, P):
 
     calc_radius = max(l) * spacing
     cell_size = 2 * calc_radius / (cp - 1)
-
-    view_plane = calculation_plane(cell_size=cell_size,
-                                   height=height,
-                                   cp=cp)
     tiles = np.zeros((cp, cp))
 
     coords_COV = []
@@ -299,7 +272,7 @@ def COV_piecewise_linear(Bz, coords, height, spacing, P):
         coords_COV.append([round(cp // 2 + point[0] * P / cell_size), round(cp // 2 + point[1] * P / cell_size)])
 
     mask_piecewise_linear(tiles, coords_COV)
-    Bz_masked = np.multiply(tiles, Bz[:, :, view_plane])
+    Bz_masked = np.multiply(tiles, Bz)
     Bz_mean = np.sum(Bz_masked) / np.sum(tiles)
     Bz_std = np.sqrt((np.sum((Bz_masked - np.multiply(Bz_mean, tiles)) ** 2)) / (np.sum(tiles)))
     COV = Bz_std / Bz_mean

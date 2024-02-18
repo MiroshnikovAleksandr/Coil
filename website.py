@@ -4,10 +4,11 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import macros
-import Field_functions as ff
 import tomli
 import Resistance
-from DEAP_Field_refactored import Genetic
+from Genetic_circular import Genetic_circular
+from Genetic_piece import Genetic_piecewise
+from Genetic_rect import GeneticRectangle
 from turns_splitter import split
 import Plot
 import Bz_Field
@@ -39,7 +40,6 @@ def changeSize(var, size):
         return var / 100
     if size == 'мм':
         return var / 1000
-
 
 
 with open('parameters.toml', 'rb') as toml:
@@ -176,7 +176,7 @@ if do:
         GA = Genetic_piecewise(parameters)
     else:
         GA = Genetic(parameters)
-    # GA = Genetic(parameters)
+
     GA.preparation()
     if form == 'кусочно-линейная':
         GA.minimal_side()

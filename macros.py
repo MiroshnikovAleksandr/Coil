@@ -1,4 +1,100 @@
 coils = [0.08, 0.6, 0.04, 0.02]
+coords_start = [[-0.5, -0.866025], [-1, 0], [-0.5, 0.866025], [0.5, 0.866025], [1, 0], [0.5, -0.866025]]
+coords = [[[[-0.5, -0.866025], [-1.0, 0.0], [-0.5, 0.866025], [0.5, 0.866025], [1.0, 0.0], [0.5, -0.866025]]],
+          [[[-0.375, -0.64951875], [-0.75, 0.0], [-0.375, 0.64951875], [0.375, 0.64951875], [0.75, 0.0], [0.375, -0.64951875]],
+           [[-0.03333333333333333, -0.057735], [-0.06666666666666667, 0.0], [-0.03333333333333333, 0.057735],
+            [0.03333333333333333, 0.057735], [0.06666666666666667, 0.0], [0.03333333333333333, -0.057735]],
+           [[-0.016666666666666666, -0.0288675], [-0.03333333333333333, 0.0], [-0.016666666666666666, 0.0288675],
+            [0.016666666666666666, 0.0288675], [0.03333333333333333, 0.0], [0.016666666666666666, -0.0288675]]]]
+
+
+# s_1 = ''
+# for seq in coords:
+#     s_2 = ''
+#     for turn in seq:
+#         turn_str = 'Array(' + ', '.join(f'Array({", ".join(str(num) for num in pair)})' for pair in turn) + ')'
+#         s_2 += turn_str + ', '
+#     s_2 = s_2[:-2]
+#     coord_a = 'Array(' + s_2 + ')'
+#     s_1 += coord_a + ', '
+# s_1 = s_1[:-2]
+# array = 'Array(' + s_1 + ')'
+# print(array)
+
+
+def create_piecewise_macros(coords):
+    s_1 = ''
+    for seq in coords:
+        s_2 = ''
+        for turn in seq:
+            turn_str = 'Array(' + ', '.join(f'Array({", ".join(str(num) for num in pair)})' for pair in turn) + ')'
+            s_2 += turn_str + ', '
+        s_2 = s_2[:-2]
+        coord_a = 'Array(' + s_2 + ')'
+        s_1 += coord_a + ', '
+    s_1 = s_1[:-2]
+    rad = 'Array(' + s_1 + ')'
+    macros = f"""
+
+    Sub main
+    Dim rad() As Variant, r As Variant, i As Integer, j As Integer, k As Integer, gap As Variant
+    rad = {rad}
+    gap = 0.01
+    For i = 0 To UBound(rad())
+         For j = 0 To UBound(rad(i))
+              r = rad(i)(j)
+              With Polygon 
+                   .Reset 
+                   .Name "turn" + Str(i) + Str(j)
+                   .Curve "curve1" 
+                   .Point r(0)(0), r(0)(1)
+                   For k = 1 To UBound(r)
+                        .LineTo r(k)(0), r(k)(1)
+                   Next k
+                   .LineTo r(0)(0), r(0)(1) - gap
+                   .Create 
+              End With
+        Next j
+    Next i
+
+
+    For i = 0 To UBound(rad())
+         For j = 0 To UBound(rad(i)) - 1
+         With Line
+              .Reset
+              .Name "connection" + Str(j) + "-" + Str(j + 1)
+              .Curve "curve1" 
+              .X1 rad(i)(j)(0)(0) 
+              .Y1 rad(i)(j)(0)(1) - gap
+              .X2 rad(i)(j+1)(0)(0) 
+              .Y2 rad(i)(j+1)(0)(1) 
+              .Create 
+         End With
+         Next j
+    Next i
+
+    
+    For i = 0 To UBound(rad())
+         For j = 0 To UBound(rad(i)) - 1
+         With Polygon
+            .Reset
+            .Version 10
+            .Name "3dpolygon" + Str(i) + Str(j)
+            .Curve "curve1"
+            .Point rad(i)(j), "0", "0"
+            .Point rad(i)(j + 1)*Cos(pi/18), rad(i)(j + 1)*Sin(pi/18), "0"
+            .Create
+         End With
+         Next j
+    Next i
+
+    
+    End Sub"""
+    return macros
+
+
+with open('macros1.txt', 'w') as f:
+    f.write(create_piecewise_macros(coords))
 
 
 def create_circular_macros(coils):

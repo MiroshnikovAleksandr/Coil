@@ -3,62 +3,35 @@ import numpy as np
 from Bz_Field import Radii_in_coords, Radii_in_sides_square
 
 
-def transposition(xv, yv, zv):
-    """
-    Transposes a three-dimensional array at a fixed third index
-    ---------------
-    """
-    cp = len(xv)
-
-    xv_T = np.zeros((cp, cp, cp))
-    yv_T = np.zeros((cp, cp, cp))
-    zv_T = np.zeros((cp, cp, cp))
-
-    for i in range(cp):
-        xv_T[:, :, i] = xv[:, :, i].T
-        yv_T[:, :, i] = yv[:, :, i].T
-        zv_T[:, :, i] = zv[:, :, i].T
-
-    return xv_T, yv_T, zv_T
-
-
-def plot_2d(Bz, height, a_max, spacing, cp):
+def plot_2d(Bz, height, a_max, spacing, cp, ax, COV):
     """
     Draws a 2D graph of the magnetic field with a cut on the X-axis
     """
     calc_radius = a_max * spacing  # Calculation domain length
     x = np.linspace(-calc_radius, calc_radius, cp)
-    view_plane = int(height / (2 * calc_radius / cp) + cp / 2)
-    fig = plt.figure()
-    plt.plot(x * 1e2, Bz[view_plane, :, view_plane] * 1e6, color='#000000')
+    ax.plot(x * 1e2, Bz[cp // 2, :] * 1e6, color='#000000', label=f'COV = {round(COV * 100, 2)} %')
     plt.xlabel('x [cm]')
     plt.ylabel('Bz [uT]')
     plt.title('Bz Field at {} mm height'.format(height * 1e3))
+    ax.grid()
+    plt.legend()
 
-    return fig
 
-
-def plot_3d(Bz, height, a_max, spacing, cp):
+def plot_3d(Bz, height, a_max, spacing, cp, ax):
     """
     Draws a 3D graph of the magnetic field
     """
     calc_radius = a_max * spacing  # Calculation domain length
     x = np.linspace(-calc_radius, calc_radius, cp)
-    xv, yv, zv = np.meshgrid(x, x, x)  # Creating meshgrid
-    xv, yv, zv = transposition(xv, yv, zv)
-    view_line = height / (2 * calc_radius / np.size(x)) + np.size(x) / 2
-    view_line = int(view_line)
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.plot_surface(xv[:, :, view_line] * 1e2, yv[:, :, view_line] * 1e2, Bz[:, :, view_line] * 1e6, cmap='inferno')
+    xv, yv = np.meshgrid(x, x)  # Creating meshgrid
+
+    ax.plot_surface(xv * 1e2, yv * 1e2, Bz * 1e6, cmap='inferno')
     ax.set_title('Bz Field at {} mm height'.format(height * 1e3))
-    plt.xlabel('x [cm]')
-    plt.ylabel('y [cm]')
-
-    return fig
+    plt.xlabel('$x$, cm')
+    plt.ylabel('$y$, cm')
 
 
-def plot_coil(a_max, spacing, R):
+def plot_coil(a_max, spacing, R, ax):
     """
     Draws a circular coil
     ---------------
@@ -66,13 +39,10 @@ def plot_coil(a_max, spacing, R):
     @param spacing: Spacing between coil and the calculation domain boundary
     @param R: Set of radii
     """
-    fig = plt.figure(figsize=(5, 5), dpi=100)
-
-    ax = fig.subplots()
     ax.set_xlim((-a_max * spacing, a_max * spacing))
     ax.set_ylim((-a_max * spacing, a_max * spacing))
     for i, radius in enumerate(R):
-        # circle = plt.Circle((a_max*spacing, a_max*spacing), radius, fill=False)
+        # circle = plt.Circular((a_max*spacing, a_max*spacing), radius, fill=False)
         circle = plt.Circle((0, 0), radius, fill=False)
 
         ax.add_patch(circle)
@@ -80,10 +50,8 @@ def plot_coil(a_max, spacing, R):
         plt.xlabel('x [m]')
         plt.ylabel('y [m]')
 
-    return fig
 
-
-def plot_square_coil(m_max, n_max, spacing, R):
+def plot_square_coil(m_max, n_max, spacing, R, ax):
     """
     Draws a rectangular coil
     ---------------
@@ -94,8 +62,6 @@ def plot_square_coil(m_max, n_max, spacing, R):
     """
     m_i, n_i = Radii_in_sides_square(R, m_max, n_max)
 
-    fig = plt.figure(figsize=(5, 5), dpi=100)
-    ax = fig.subplots()
     max_size = np.max([m_max, n_max]) * spacing
 
     ax.set_xlim((-max_size, max_size))
@@ -113,7 +79,7 @@ def plot_square_coil(m_max, n_max, spacing, R):
     return fig
 
 
-def plot_piecewise_linear_coil(coords_max, spacing, R):
+def plot_piecewise_linear_coil(coords_max, spacing, R, ax):
     """
     Draws a piecewise linear coil
     ---------------
@@ -121,8 +87,6 @@ def plot_piecewise_linear_coil(coords_max, spacing, R):
     @param spacing: Spacing between coil and the calculation domain boundary
     @param R: Set of radii
     """
-    fig = plt.figure(figsize=(5, 5), dpi=100)
-    ax = fig.subplots()
     l = []
     for i in range(len(coords_max)-1):
         l.append(np.sqrt(coords_max[i][0]**2 + coords_max[i][1]**2))

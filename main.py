@@ -6,7 +6,9 @@ Created on Sat Dec 11 13:56:41 2021
 """
 import Bz_Field as Bz
 import COV
-from DEAP_Field_refactored import Genetic
+from Genetic_circular import Genetic_circular
+from Genetic_piece import Genetic_piecewise
+from Genetic_rect import GeneticRectangle
 import numpy as np
 import matplotlib.pyplot as plt
 import Plot
@@ -19,7 +21,13 @@ import macros
 with open('parameters.toml', 'rb') as toml:
     parameters = tomli.load(toml)
 
-GA = Genetic(parameters)
+if parameters['geom']['figure'] == 'Circular':
+    GA = Genetic_circular(parameters)
+elif parameters['geom']['figure'] == 'Piecewise':
+    GA = Genetic_piecewise(parameters)
+elif parameters['geom']['figure'] == 'Rectangle':
+    GA = GeneticRectangle(parameters)
+
 GA.preparation()
 
 flat_radii_array = GA.execution()
