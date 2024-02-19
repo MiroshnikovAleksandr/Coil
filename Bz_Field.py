@@ -1,6 +1,6 @@
 import numpy as np
 import math
-from scipy.special import ellipk,ellipkm1, ellipe
+from scipy.special import ellipk, ellipkm1, ellipe
 
 
 def prop_coeff(R):
@@ -12,12 +12,12 @@ def prop_coeff(R):
     R.reverse()
     prop = []
     for i in range(len(R)):
-        prop.append(R[i]/max(R))
+        prop.append(R[i] / max(R))
 
     return prop
 
 
-def Radii_in_sides_square(R, X_side, Y_side, split = False):
+def Radii_in_sides_square(R, X_side, Y_side, split=False):
     """
     Converts radii to sides of a rectangular coil
     ---------------
@@ -28,7 +28,7 @@ def Radii_in_sides_square(R, X_side, Y_side, split = False):
             prop = prop_coeff(coil)
             sides = []
             for k in prop:
-                sides.append([X_side*k, Y_side*k])
+                sides.append([X_side * k, Y_side * k])
             split_sides.append(sides)
         return split_sides
     else:
@@ -91,24 +91,24 @@ def Bz_segment(start_point, end_point, I, cp, calc_radius):
     if x1 != x2 and y1 != y2:
 
         k = (y2 - y1) / (x2 - x1)
-        b = y2 - k*x2
+        b = y2 - k * x2
 
-        alpha = np.sqrt(k**2 + 1)
-        betta = (xv + k*yv - b*k) / (alpha**2)
-        gamma = yv - (k*xv + b)
-        delta = zv**2 + (gamma / alpha)**2
+        alpha = np.sqrt(k ** 2 + 1)
+        betta = (xv + k * yv - b * k) / (alpha ** 2)
+        gamma = yv - (k * xv + b)
+        delta = zv ** 2 + (gamma / alpha) ** 2
 
-        Bz_segment_1 = C * ((x1 - betta) * gamma) / (delta * np.sqrt((alpha * (x1 - betta))**2 + delta))
-        Bz_segment_2 = C * ((x2 - betta) * gamma) / (delta * np.sqrt((alpha * (x2 - betta))**2 + delta))
+        Bz_segment_1 = C * ((x1 - betta) * gamma) / (delta * np.sqrt((alpha * (x1 - betta)) ** 2 + delta))
+        Bz_segment_2 = C * ((x2 - betta) * gamma) / (delta * np.sqrt((alpha * (x2 - betta)) ** 2 + delta))
 
         return Bz_segment_2 - Bz_segment_1
 
     elif x1 == x2 and y1 != y2:
 
-        alpha = zv**2 + (x1 - xv)**2
+        alpha = zv ** 2 + (x1 - xv) ** 2
 
-        Bz_segment_1 = C * ((x1 - xv) * (y1 - yv)) / (alpha * np.sqrt((y1 - yv)**2 + alpha))
-        Bz_segment_2 = C * ((x1 - xv) * (y2 - yv)) / (alpha * np.sqrt((y2 - yv)**2 + alpha))
+        Bz_segment_1 = C * ((x1 - xv) * (y1 - yv)) / (alpha * np.sqrt((y1 - yv) ** 2 + alpha))
+        Bz_segment_2 = C * ((x1 - xv) * (y2 - yv)) / (alpha * np.sqrt((y2 - yv) ** 2 + alpha))
 
         return Bz_segment_2 - Bz_segment_1
 
@@ -121,7 +121,8 @@ def Bz_segment(start_point, end_point, I, cp, calc_radius):
 
         return Bz_segment_2 - Bz_segment_1
 
-def Bz_piecewise_linear_contour_single(coords,  I, cp, calc_radius):
+
+def Bz_piecewise_linear_contour_single(coords, I, cp, calc_radius):
     """
     Calculates Bz field of piecewise linear coil
     ---------------
@@ -150,7 +151,7 @@ def Bz_piecewise_linear_contour_single(coords,  I, cp, calc_radius):
     return Bz_piecewise_linear_contour_single
 
 
-def Bz_piecewise_linear_contour(R, coords,  I, spacing, cp, direction=False):
+def Bz_piecewise_linear_contour(R, coords, I, spacing, cp, direction=False):
     """
     Calculates the Bz field for a piecewise linear contour
     ---------------
@@ -165,13 +166,13 @@ def Bz_piecewise_linear_contour(R, coords,  I, spacing, cp, direction=False):
     if not direction:
         I = -I
 
-    I = np.sqrt(2)*I
+    I = np.sqrt(2) * I
 
     list_of_coords = Radii_in_coords(R, coords)
 
     l = []
     for i in range(len(coords)):
-        l.append(np.sqrt((coords[i][0])**2 + (coords[i][1])**2))
+        l.append(np.sqrt((coords[i][0]) ** 2 + (coords[i][1]) ** 2))
 
     calc_radius = np.amax(l) * spacing
 

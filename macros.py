@@ -1,4 +1,74 @@
 coils = [0.08, 0.6, 0.04, 0.02]
+coords = [[[[-1.0, 0.0], [-0.5, 0.866025], [0.5, 0.866025], [1.0, 0.0], [0.5, -0.866025], [-0.5, -0.866025]]], [
+    [[-0.13333333333333333, 0.0], [-0.06666666666666667, 0.11547], [0.06666666666666667, 0.11547],
+     [0.13333333333333333, 0.0], [0.06666666666666667, -0.11547], [-0.06666666666666667, -0.11547]],
+    [[-0.06666666666666667, 0.0], [-0.03333333333333333, 0.057735], [0.03333333333333333, 0.057735],
+     [0.06666666666666667, 0.0], [0.03333333333333333, -0.057735], [-0.03333333333333333, -0.057735]],
+    [[-0.03333333333333333, 0.0], [-0.016666666666666666, 0.0288675], [0.016666666666666666, 0.0288675],
+     [0.03333333333333333, 0.0], [0.016666666666666666, -0.0288675], [-0.016666666666666666, -0.0288675]]]]
+
+
+def create_piecewise_macros(coords):
+    s_2 = ''
+    for subcoil in coords:
+        s_1 = ''
+        for turn in subcoil:
+            turn = 'Array(' + ', '.join(f'Array({", ".join(str(num) for num in pair)})' for pair in turn) + ')'
+            s_1 += turn + ', '
+        s_1 = s_1[:-2]
+        coil = 'Array(' + s_1 + ')'
+        s_2 += coil + ', '
+    s_2 = s_2[:-2]
+    rad = 'Array(' + s_2 + ')'
+
+    macros = f"""
+Sub Main
+    
+    
+Dim rad() As Variant, r As Variant, i As Integer, j As Integer, k As Integer, gap As Variant
+    rad = {rad}
+    gap = 0.03
+    For i = 0 To UBound(rad())
+         For j = 0 To UBound(rad(i))
+              r = rad(i)(j)
+              With Polygon
+                   .Reset
+                   .Name "turn" + Str(i) + Str(j)
+                   .Curve "curve1"
+                   .Point r(0)(0), r(0)(1)
+                   For k = 1 To UBound(r)
+                        .LineTo r(k)(0), r(k)(1)
+                   Next k
+                   .LineTo r(0)(0), r(0)(1) - gap
+                   .Create
+              End With
+        Next j
+    Next i
+
+
+    For i = 0 To UBound(rad)
+        For j = UBound(rad(i)) To 1 STEP -1
+        	r = rad(i)(j)
+        	With Line
+              .Reset
+              .Name "connection" + Str(j) + " -" + Str(j - 1)
+              .Curve "curve1"
+              .X1 r(0)(0)
+              .Y1 r(0)(1) - gap
+              .X2 rad(i)(j-1)(0)(0)
+              .Y2 rad(i)(j-1)(0)(1)
+              .Create
+            End With
+        Next
+    Next i
+    
+    
+End Sub
+"""
+    return macros
+
+
+create_piecewise_macros(coords)
 
 
 def create_circular_macros(coils):
@@ -234,6 +304,3 @@ Next i
 
 End Sub"""
     return macros
-
-# with open('macros.mcs', 'wb') as f:
-#     f.write()
