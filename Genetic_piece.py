@@ -14,20 +14,8 @@ import Resistance
 import tomli
 import Bz_Field as Bz
 
-# from scoop import futures
-# import multiprocessing
-
-# seed = 4090899410329119572
-# random.seed(seed)
-
-with open('parameters.toml', 'rb') as toml:
-    parameters = tomli.load(toml)
 
 toolbox = base.Toolbox()  # create toolbox for genetic algorithm
-
-# toolbox.register("map", futures.map)
-# pool = multiprocessing.Pool()
-# toolbox.register("map", pool.map)
 
 creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMin)

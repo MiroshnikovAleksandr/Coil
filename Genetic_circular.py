@@ -22,6 +22,11 @@ from deap import tools
 from COV import COV_circle, COV_square, COV_piecewise_linear
 from utilities import index_of_element, Radii_in_coords
 
+toolbox = base.Toolbox()  # create toolbox for genetic algorithm
+
+creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
+creator.create("Individual", list, fitness=creator.FitnessMin)
+
 
 class Genetic_circular:
     """
