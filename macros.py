@@ -1,4 +1,4 @@
-coils = [0.08, 0.6, 0.04, 0.02]
+coils = [[0.08, 0.06, 0.04, 0.02]]
 coords = [[[[-1.0, 0.0], [-0.5, 0.866025], [0.5, 0.866025], [1.0, 0.0], [0.5, -0.866025], [-0.5, -0.866025]]], [
     [[-0.13333333333333333, 0.0], [-0.06666666666666667, 0.11547], [0.06666666666666667, 0.11547],
      [0.13333333333333333, 0.0], [0.06666666666666667, -0.11547], [-0.06666666666666667, -0.11547]],
@@ -59,7 +59,7 @@ Dim rad() As Variant, r As Variant, i As Integer, j As Integer, k As Integer, ga
               .Y2 rad(i)(j-1)(0)(1)
               .Create
             End With
-        Next
+        Next j
     Next i
     
     
@@ -68,7 +68,8 @@ End Sub
     return macros
 
 
-create_piecewise_macros(coords)
+with open('macros1.txt', 'w') as f:
+    f.write(create_piecewise_macros(coords))
 
 
 def create_circular_macros(coils):
@@ -137,6 +138,10 @@ Next i
 	
 End Sub"""
     return macros
+
+
+with open('macros2.txt', 'w') as f:
+    f.write(create_circular_macros(coils))
 
 
 def create_rectangular_macros(coils):
