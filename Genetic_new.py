@@ -182,7 +182,7 @@ def max_min_bz_ratio(ind: list):
     try:
         return abs((bz_max - bz_min) / bz_max),
     except RuntimeWarning:
-        return 1,
+        return 1,#
 
 
 def check_feasibility(ind: list):
