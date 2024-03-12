@@ -20,6 +20,7 @@ from COV import COV_circle, COV_square, COV_piecewise_linear
 from utilities import index_of_element, Radii_in_coords
 
 import warnings
+
 warnings.filterwarnings("error")
 
 # PARAMETERS
@@ -37,7 +38,7 @@ r_max = 0.125
 r_min = 0.0125
 minimal_gap = 0.003
 spacing = 1.5
-calculation_area = 0.5
+calculation_area = 0.7
 cp = 100
 height = 0.03
 
@@ -45,7 +46,7 @@ height = 0.03
 I = 1
 freq = 6.78e6
 
-ind_length = int(discreteness * ((r_max - r_min) // minimal_gap))  # number of digits encoding a chromosome
+ind_length = discreteness * int((r_max - r_min) // minimal_gap)  # number of digits encoding a chromosome
 
 toolbox = base.Toolbox()  # create toolbox for genetic algorithm
 
@@ -131,7 +132,7 @@ def determine_Bz(ind: list):
     Calculates the Z-component of magnetic inductance Bz at the specified height above the coil encoded
     by :var:'ind' in the specified calculation area.
     @param ind: chromosome
-    @return: Bz
+    @return: numpy.ndarray(2, 2) Bz
     """
     R = decode(ind)
     return Bz_Field.Bz_circular_contour(R=R,
@@ -145,27 +146,43 @@ def determine_COV(ind: list):
     """
     Calculates the coefficient (COV) of variation of the Bz of the coil, encoded by :var:'ind'.
     @param ind: chromosome
-    @return: COV
-    """
-    bz = determine_Bz(ind)
-    return COV.COV_circle(Bz=bz,
-                          max_coil_r=r_max,
-                          spacing=spacing,
-                          P=calculation_area)
-
-
-def fitness_func(ind: list):
-    """
-    Calculates the fitness function of an individual for the genetic algorithm.
-    @param ind: chromosome
     @return: tuple (cov, )
     """
+    bz = determine_Bz(ind)
     try:
-        cov = determine_COV(ind)
+        cov = COV.COV_circle(Bz=bz,
+                             max_coil_r=r_max,
+                             spacing=spacing,
+                             P=calculation_area)
     # Return 1 if COV is incalculable
     except RuntimeWarning:
         cov = 1
     return cov,
+
+
+def max_min_bz_ratio(ind: list):
+    """
+    Calculates (max(Bz) - min(Bz)) / max(Bz) for Bz inside the calculation area.
+    @param ind: chromosome
+    @return: tuple ((max(Bz) - min(Bz)) / max(Bz), )
+    """
+    bz = determine_Bz(ind)
+    calc_radius = r_max * spacing
+    cell_size = (2 * calc_radius) / (cp - 1)
+    tiles = np.ones((cp, cp)) * np.nan
+    r_cov = round(r_max * np.sqrt(calculation_area) / cell_size)  # Uniform area in cells
+    half_cp = len(tiles) // 2
+    res = []
+    for x in range(half_cp - r_cov, half_cp + r_cov):
+        for y in range(half_cp - r_cov, half_cp + r_cov):
+            if math.sqrt((half_cp - x) ** 2 + (half_cp - y) ** 2) <= r_cov:
+                res.append(bz[x][y])
+    bz_max = np.max(res)
+    bz_min = np.min(res)
+    try:
+        return abs((bz_max - bz_min) / bz_max),
+    except RuntimeWarning:
+        return 1,
 
 
 def check_feasibility(ind: list):
@@ -174,13 +191,13 @@ def check_feasibility(ind: list):
     @param ind: chromosome
     @return: boolean
     """
-    return len(decode(ind)) > 4
+    return len(decode(ind)) == 9
 
 
 # registering objective function with constraint
 toolbox.register("evaluate", fitness_func)  # provide the objective function here
 # toolbox.decorate("evaluate",
-#                  tools.DeltaPenalty(check_feasibility, 1.5))  # constraint on the objective function
+#                  tools.DeltaPenalty(check_feasibility, 0.5))  # constraint on the objective function
 
 # registering basic processes using built-in functions in DEAP
 toolbox.register("select", tools.selTournament, tournsize=tournSel_k)  # selection strategy
@@ -207,5 +224,7 @@ pop, logbook = algorithms.eaSimple(pop,
 hall_of_fame = tools.HallOfFame(1)
 hall_of_fame.update(pop)
 print(decode(hall_of_fame[0]))
+print(len(decode(hall_of_fame[0])))
 print(fitness_func(hall_of_fame[0]))
+print(determine_COV(hall_of_fame[0]))
 print(list(map(len, list(map(decode, pop)))))
