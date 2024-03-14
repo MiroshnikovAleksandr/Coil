@@ -180,6 +180,41 @@ def mask_piecewise_linear(tiles, coords):
                 tiles[index_y + 1][x] = 0
 
 
+def max_min_bz_circular(Bz, max_coil_r, spacing, cp, P):
+    calc_radius = max_coil_r * spacing
+    cell_size = (2 * calc_radius) / (cp - 1)
+    r_cov = round(max_coil_r * np.sqrt(P) / cell_size)  # Uniform area in cells
+    half_cp = cp // 2
+    res = []
+    for x in range(half_cp - r_cov, half_cp + r_cov):
+        for y in range(half_cp - r_cov, half_cp + r_cov):
+            if math.sqrt((half_cp - x) ** 2 + (half_cp - y) ** 2) <= r_cov:
+                res.append(Bz[x][y])
+    bz_max = np.max(res)
+    bz_min = np.min(res)
+    return [bz_min, bz_max]
+
+
+def max_min_bz_rectangle(Bz, X_side, Y_side, cp, P):
+    calc_radius = 0.5 * max([X_side, Y_side]) * spacing
+    cell_size = 2 * calc_radius / (cp - 1)
+    X_side_COV = round(X_side * P / cell_size)
+    Y_side_COV = round(Y_side * P / cell_size)
+    half_cp = cp // 2
+    res = []
+    for x in range(half_cp - X_side_COV, half_cp + X_side_COV + 1):
+        for y in range(half_cp - Y_side_COV, half_cp + Y_side_COV + 1):
+            res.append(Bz[x][y])
+    bz_max = np.max(res)
+    bz_min = np.min(res)
+    return [bz_min, bz_max]
+
+
+# def max_min_bz_piecewise_linear(Bz, X_side, Y_side, cp, P):
+#     calc_radius = 0.5 * max([X_side, Y_side]) * spacing
+#     cell_size = 2 * calc_radius / (cp - 1)
+
+
 def calculation_plane(cell_size, height, cp):
     """"""
     if height < cell_size:

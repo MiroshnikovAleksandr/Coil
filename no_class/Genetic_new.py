@@ -38,7 +38,7 @@ r_max = 0.125
 r_min = 0.0125
 minimal_gap = 0.003
 spacing = 1.5
-calculation_area = 0.7
+calculation_area = 0.5
 cp = 100
 height = 0.03
 
@@ -167,22 +167,16 @@ def max_min_bz_ratio(ind: list):
     @return: tuple ((max(Bz) - min(Bz)) / max(Bz), )
     """
     bz = determine_Bz(ind)
-    calc_radius = r_max * spacing
-    cell_size = (2 * calc_radius) / (cp - 1)
-    tiles = np.ones((cp, cp)) * np.nan
-    r_cov = round(r_max * np.sqrt(calculation_area) / cell_size)  # Uniform area in cells
-    half_cp = len(tiles) // 2
-    res = []
-    for x in range(half_cp - r_cov, half_cp + r_cov):
-        for y in range(half_cp - r_cov, half_cp + r_cov):
-            if math.sqrt((half_cp - x) ** 2 + (half_cp - y) ** 2) <= r_cov:
-                res.append(bz[x][y])
-    bz_max = np.max(res)
-    bz_min = np.min(res)
+    bz_max_min = COV.max_min_bz_circular(Bz=bz,
+                                         max_coil_r=r_max,
+                                         spacing=spacing,
+                                         P=calculation_area)
+    bz_min = bz_max_min[0]
+    bz_max = bz_max_min[1]
     try:
         return abs((bz_max - bz_min) / bz_max),
     except RuntimeWarning:
-        return 1,#
+        return 1,
 
 
 def check_feasibility(ind: list):
@@ -195,7 +189,7 @@ def check_feasibility(ind: list):
 
 
 # registering objective function with constraint
-toolbox.register("evaluate", fitness_func)  # provide the objective function here
+toolbox.register("evaluate", max_min_bz_ratio)  # provide the objective function here
 # toolbox.decorate("evaluate",
 #                  tools.DeltaPenalty(check_feasibility, 0.5))  # constraint on the objective function
 
@@ -225,6 +219,6 @@ hall_of_fame = tools.HallOfFame(1)
 hall_of_fame.update(pop)
 print(decode(hall_of_fame[0]))
 print(len(decode(hall_of_fame[0])))
-print(fitness_func(hall_of_fame[0]))
+print(max_min_bz_ratio(hall_of_fame[0]))
 print(determine_COV(hall_of_fame[0]))
 print(list(map(len, list(map(decode, pop)))))
