@@ -8,7 +8,7 @@ CXPB = 0.4 # вероятность скрещивания
 MUTPB = 0.04  # вероятность мутации
 p_one = 0.8 # вероятность появления единицы
 discreteness = 3 # на сколько позиций разбивается каждая ширина провода
-fitn_f = 'max_min' # "COV" или "max_min"
+fitn_f = 'COV' # "COV" или "max_min"
 
 [geom]
 a_max = 0.125 # [m] Max coil radius

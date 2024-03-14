@@ -12,7 +12,7 @@ def prop_coeff(R):
     return prop
 
 
-def Radii_in_sides_square(R, X_side, Y_side, split = False):
+def Radii_in_sides_square(R, X_side, Y_side, split=False):
     """
     Converts radii to sides of a rectangular coil
     ---------------
