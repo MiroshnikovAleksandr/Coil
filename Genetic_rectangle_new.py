@@ -281,14 +281,14 @@ GA.min_side()
 GA.preparation()
 GA.execution()
 GA.show()
-fig, ax = plt.subplots()
-# Plot.plot_square_coil(m_max=GA.X_side, n_max=GA.Y_side, spacing=GA.spacing,
-#                       R=GA.decode(GA.hall_of_fame[0]), ax=ax)
-Plot.plot_2d(Bz=GA.determine_Bz(GA.hall_of_fame[0]),
-             height=GA.height,
-             a_max=GA.X_side,
-             spacing=GA.spacing,
-             cp=GA.cp,
-             ax=ax,
-             COV=1)
-plt.show()
+# fig, ax = plt.subplots()
+# # Plot.plot_square_coil(m_max=GA.X_side, n_max=GA.Y_side, spacing=GA.spacing,
+# #                       R=GA.decode(GA.hall_of_fame[0]), ax=ax)
+# Plot.plot_2d(Bz=GA.determine_Bz(GA.hall_of_fame[0]),
+#              height=GA.height,
+#              a_max=GA.X_side,
+#              spacing=GA.spacing,
+#              cp=GA.cp,
+#              ax=ax,
+#              COV=1)
+# plt.show()

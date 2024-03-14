@@ -198,8 +198,8 @@ def max_min_bz_circular(Bz, max_coil_r, spacing, cp, P):
 def max_min_bz_rectangle(Bz, X_side, Y_side, spacing, cp, P):
     calc_radius = 0.5 * max([X_side, Y_side]) * spacing
     cell_size = 2 * calc_radius / (cp - 1)
-    X_side_COV = round(X_side * P / cell_size)
-    Y_side_COV = round(Y_side * P / cell_size)
+    X_side_COV = round(X_side * P / cell_size) // 2
+    Y_side_COV = round(Y_side * P / cell_size) // 2
     half_cp = cp // 2
     res = []
     for x in range(half_cp - X_side_COV, half_cp + X_side_COV + 1):
