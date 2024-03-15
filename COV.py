@@ -210,9 +210,24 @@ def max_min_bz_rectangle(Bz, X_side, Y_side, spacing, cp, P):
     return [bz_min, bz_max]
 
 
-# def max_min_bz_piecewise_linear(Bz, X_side, Y_side, cp, P):
-#     calc_radius = 0.5 * max([X_side, Y_side]) * spacing
-#     cell_size = 2 * calc_radius / (cp - 1)
+def max_min_bz_piecewise_linear(Bz, coords, spacing, cp, P):
+    l = []
+    for i in range(len(coords)):
+        l.append(np.sqrt((coords[i][0]) ** 2 + (coords[i][1]) ** 2))
+
+    calc_radius = max(l) * spacing
+    cell_size = 2 * calc_radius / (cp - 1)
+    tiles = np.zeros((cp, cp))
+
+    coords_COV = []
+    for point in coords:
+        coords_COV.append([round(cp // 2 + point[0] * P / cell_size), round(cp // 2 + point[1] * P / cell_size)])
+
+    mask_piecewise_linear(tiles, coords_COV)
+    Bz_masked = np.multiply(tiles, Bz)
+    bz_max = np.max(Bz_masked[np.nonzero(Bz_masked)])
+    bz_min = np.min(Bz_masked[np.nonzero(Bz_masked)])
+    return [bz_min, bz_max]
 
 
 def calculation_plane(cell_size, height, cp):
